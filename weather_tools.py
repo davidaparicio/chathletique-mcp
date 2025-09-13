@@ -119,4 +119,3 @@ def filter_weather_data(data):
 
     return simplified
 
-get_weather_prediction()
