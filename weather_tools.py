@@ -1,12 +1,10 @@
 import requests
 import os
-from dotenv import load_dotenv
 from mcp_utils import mcp
 
 
 # -------------------------------- Globals --------------------------------
 
-load_dotenv()
 token = os.getenv('WEATHER_API_KEY')
 if not token:
     print("Error: WEATHER_API_KEY not found in .env file")

@@ -1,17 +1,14 @@
 import os
 import json
-from dotenv import load_dotenv
 
 
 from stravalib.client import Client
 
-import mcp.types as types
 from mcp_utils import mcp
 
 
 # -------------------------------- Globals --------------------------------
 
-load_dotenv()
 token = os.getenv('STRAVA_ACCESS_TOKEN')
 if not token:
     print("Error: STRAVA_ACCESS_TOKEN not found in .env file")
