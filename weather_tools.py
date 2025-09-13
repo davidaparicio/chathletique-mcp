@@ -45,7 +45,7 @@ def get_weather_prediction()-> str:
 
     response = requests.get(base_url, params=params)
     response = filter_weather_data(response.json()) # filter out to keep relevant data
-    return response
+    return str(response)
 
 
 
@@ -115,4 +115,3 @@ def filter_weather_data(data):
         })
 
     return simplified
-
