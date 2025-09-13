@@ -7,7 +7,9 @@ import stravalib
 from urllib.parse import urlencode, quote_plus
 import openrouteservice
 from matplotlib import pyplot as plt
+import pandas as pd
 import numpy as np
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from geopy.geocoders import Nominatim
@@ -238,17 +240,25 @@ def create_itinerary(starting_place : str = Field(description="The start of the 
 
 
 @mcp.tool(
-    title="Get Heart Rate and Speed Figures",
-    description="Get heart rate and speed figures for the last activities of the user",
+    title="Get Heart Rate and Speed ",
+    description="Get heart rate and speed for the last activities of the user. By setting number_of_activity, you can choose how many activities you want to analyze. 5 activies : the last 5 activities. The output can be a list of dicts (JSON-friendly) or a list of pandas DataFrames.",
 )
-def figures_speed_hr_by_activity(number_of_activity: int,
+def speed_hr_by_activity(number_of_activity: int,
                                  resolution: str = "high",
                                  series_type: str = "time"):
     """
-    Retourne une liste de tuples: [(activity_name, fig_hr, fig_speed), ...]
-    - fig_hr : courbe FC (rouge) en fonction du temps (s)
-    - fig_speed : courbe vitesse (bleue) en fonction du temps (s)
-    Crée une figure séparée par métrique (pas de subplots).
+    Retourne un JSON contenant les données de fréquence cardiaque et vitesse
+    pour les dernières activités.
+    Format :
+    [
+      {
+        "name": "...",
+        "time_s": [...],
+        "heartrate_bpm": [...],
+        "speed_kmh": [...]
+      },
+      ...
+    ]
     """
     out = []
     activities = client_strava.get_activities(limit=number_of_activity)
@@ -261,7 +271,7 @@ def figures_speed_hr_by_activity(number_of_activity: int,
                 resolution=resolution,
                 series_type=series_type
             )
-        except Exception as e:
+        except Exception:
             continue
 
         t = np.array(streams["time"].data) if streams and "time" in streams else None
@@ -269,6 +279,7 @@ def figures_speed_hr_by_activity(number_of_activity: int,
         vel = np.array(streams["velocity_smooth"].data) if streams and "velocity_smooth" in streams else None
         hr  = np.array(streams["heartrate"].data) if streams and "heartrate" in streams else None
 
+        # Si pas de vitesse, calcul à partir de la distance
         if vel is None and (t is not None) and (dist is not None) and len(t) == len(dist) and len(t) > 1:
             try:
                 vel = np.gradient(dist, t)
@@ -277,31 +288,14 @@ def figures_speed_hr_by_activity(number_of_activity: int,
 
         speed_kmh = vel * 3.6 if vel is not None else None
 
-        # Figure 1: Heart rate (rouge)
-        fig_hr = plt.figure()
-        if (t is not None) and (hr is not None) and len(t) == len(hr) and len(hr) > 0:
-            plt.plot(t, hr, color="red")
-            plt.xlabel("Time (s)")
-            plt.ylabel("Heart rate (bpm)")
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Heart rate")
-        else:
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Heart rate")
-            plt.text(0.5, 0.5, "No heart rate stream", ha="center", va="center", transform=plt.gca().transAxes)
+        # Conversion en listes pour JSON
+        activity_data = {
+            "name": getattr(act, "name", "Activity"),
+            "time_s": t.tolist() if t is not None else [],
+            "heartrate_bpm": hr.tolist() if hr is not None else [],
+            "speed_kmh": speed_kmh.tolist() if speed_kmh is not None else []
+        }
 
-        # Figure 2: Speed (bleu)
-        fig_speed = plt.figure()
-        if (t is not None) and (speed_kmh is not None) and len(t) == len(speed_kmh) and len(speed_kmh) > 0:
-            plt.plot(t, speed_kmh, color="blue")
-            plt.xlabel("Time (s)")
-            plt.ylabel("Speed (km/h)")
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Speed")
-        else:
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Speed")
-            plt.text(0.5, 0.5, "No speed stream", ha="center", va="center", transform=plt.gca().transAxes)
-
-        out.append((getattr(act, "name", "Activity"), fig_hr, fig_speed))
-
-    return out
-
-
+        out.append(activity_data)
+    return json.dumps(out, indent=2)
 
