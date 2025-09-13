@@ -16,11 +16,11 @@ if not token:
 
 
 # -------------------------------- Tools --------------------------------
-
+'''
 @mcp.tool(
     title="Get Weather Predictions",
-    description="Return some weather informations based on the overall position of the user ",
-)
+    description="Return some future weather informations for where the user leaves. the place where the user lives is found by looking at where previous runs is located ",
+)'''
 def get_weather_prediction():
 
     """
@@ -89,9 +89,10 @@ def filter_weather_data(data):
     timezone_offset = city_info.get("timezone", 0)  # in seconds
     sunrise_utc = city_info.get("sunrise")
     sunset_utc = city_info.get("sunset")
+    name = city_info.get("name")
 
 
-    simplified = [{"sunrise": sunrise_utc, "sunset": sunset_utc, "timezone": timezone_offset}]
+    simplified = [{"sunrise": sunrise_utc, "sunset": sunset_utc, "timezone": timezone_offset, "name": name}]
 
     for entry in data.get("list", []):
         main = entry.get("main", {})
@@ -118,3 +119,5 @@ def filter_weather_data(data):
         })
 
     return simplified
+
+get_weather_prediction()
