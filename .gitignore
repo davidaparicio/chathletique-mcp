@@ -2,3 +2,4 @@
 venv/
 
 supp.ipynb
+__pycache__/

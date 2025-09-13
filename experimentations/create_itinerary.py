@@ -1,102 +1,27 @@
 import os
 import math
-import json
-
-
-import stravalib
+from dotenv import load_dotenv
 from urllib.parse import urlencode, quote_plus
+
 import mcp.types as types
+from mcp.server.fastmcp import FastMCP
+from mcp_utils import mcp
 import openrouteservice
 
-
-from main import mcp
-
-from dotenv import load_dotenv
-
-
-
 # -------------------------------- Globals --------------------------------
+
+mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
+
 load_dotenv()
-strava_api_key = os.getenv('STRAVA_ACCESS_TOKEN')
-ors_api_key = os.getenv('ORS_KEY')
-if not strava_api_key:
-    print("Error: STRAVA_ACCESS_TOKEN not found in .env file")
+api_key = os.getenv('ORS_KEY')
+
+if not api_key:
+    print("Error: ORS_KEY not found in .env file")
     exit(1)
 
-client_strava = stravalib.Client(access_token=strava_api_key)
-client_ors = openrouteservice.Client(key=ors_api_key)
+client = openrouteservice.Client(key=api_key)
 
 # -------------------------------- Tools --------------------------------
-
-
-@mcp.tool(
-    title="Get Authenticated user Strava Stats",
-    description="Return the Strava stats of the user as a JSON File ",
-)
-def get_athletes_stats() -> str :
-    '''
-    Output : A JSON Containing all the stats of the current user
-    '''
-    athlete_id = client_strava.get_athlete().id # APi call
-    ahtlete_stats = client_strava.get_athlete_stats(athlete_id)
-    dict = {"recent_run_totals" : ahtlete_stats.recent_run_totals.model_dump_json(), "ytd_run_totals" : ahtlete_stats.ytd_run_totals.model_dump_json(), "all_run_totals" : ahtlete_stats.all_run_totals.model_dump_json()}
-    
-    return str(dict)
-
-
-
-
-@mcp.tool(
-    title="Get Last Runs",
-    description="Get the last runs from the user's Strava account and return them in a list for activity analysis",
-)
-def get_last_runs() -> str:
-    """
-    Get the last runs from the user's Strava account and return them in a list for activity analysis
-    This function will use the Strava API to get the last runs from the user's Strava account and return them in a list for activity analysis
-    The function will return a list of runs with the following information:
-    name, distance, type, start_date_local, moving_time, average_speed, max_speed, max_heartrate, average_heartrate, total_elevation_gain, average_speed
-    
-    """
-
-    text_result : str = ''
-    runs_position : list = []
-
-    # Get the last 10 runs
-    activities = client_strava.get_activities(limit=2)
-
-    # Extract the data from the activities
-    for activity in activities:
-        if activity.type != 'Run':
-            continue
-
-        activity_data = {
-            'name' : str(activity.name),
-            'distance' : str(activity.distance),
-            'type' : str(activity.type),
-            'start_date_local' : str(activity.start_date_local),
-            'moving_time' : str(activity.moving_time),
-            'average_speed' : str(activity.average_speed),
-            'max_speed' : str(activity.max_speed),
-            'max_heartrate' : str(activity.max_heartrate),
-            'average_heartrate' : str(activity.average_heartrate),
-            'total_elevation_gain' : str(activity.total_elevation_gain),
-            'average_speed' : str(activity.average_speed)
-        }
-
-        runs_position.append(activity.start_latlng)
-
-        text_result += json.dumps(activity_data) + '\n'
-
-    # Save runs_position to a text file
-        with open("run_positions.txt", "w") as f:
-            for pos in runs_position:
-                f.write(str(pos) + "\n")
-
-    return text_result
-
-
-
 
 @mcp.tool(
     title="Create Itinerary",
@@ -106,19 +31,12 @@ def create_itinerary(start : tuple[float, float],
                     distance_km : int = 10
                     ) -> str :
     """
-    Produces an itinerary for the user
-
-    Args :
-    - start : tuple[float, float]
-    - distance_km : int
-
-    Returns :
-    - gmaps_directions_link : str
+    Output : link for the itinerary
     """
     seed = 0
 
     def _get_route(distance_km : int, start : tuple[float, float], seed = 0):
-        route = client_ors.directions(
+        route = client.directions(
             coordinates=[start], # single coordinate for round_trip
             profile="foot-walking",
             format="geojson",
@@ -209,3 +127,12 @@ def create_itinerary(start : tuple[float, float],
 
     return gmaps_directions_link
 
+
+
+if __name__ == "__main__":
+    distance_km = 20
+    start = [2.3522, 48.8566]
+    gmaps_directions_link = create_itinerary(distance_km = distance_km, start = start)
+    print(gmaps_directions_link)
+
+    
