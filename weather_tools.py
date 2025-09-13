@@ -1,7 +1,6 @@
 import requests
 import os
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
 from mcp_utils import mcp
 
 
@@ -14,7 +13,6 @@ if not token:
     exit(1)
 
 
-mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
 
 
 # -------------------------------- Tools --------------------------------
