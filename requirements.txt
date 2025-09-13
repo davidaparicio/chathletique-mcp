@@ -4,6 +4,7 @@ stravalib>=2.4
 fastmcp>=2.12.3
 numpy==2.3.3
 matplotlib==3.10.6
+mistralai
 
 # MCP Server dependencies
 mcp>=1.0.0

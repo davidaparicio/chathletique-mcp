@@ -5,11 +5,15 @@ from dotenv import load_dotenv
 
 import stravalib
 from urllib.parse import urlencode, quote_plus
-import mcp.types as types
 import openrouteservice
 from matplotlib import pyplot as plt
 import numpy as np
 
+import mistralai
+from mistralai.models import UserMessage
+from pydantic import BaseModel, Field
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 from mcp_utils import mcp
 
@@ -27,6 +31,12 @@ if not strava_api_key:
 
 client_strava = stravalib.Client(access_token=strava_api_key)
 client_ors = openrouteservice.Client(key=ors_api_key)
+client_mistral = mistralai.Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
+
+
+class Coordinates(BaseModel):
+    lon: float
+    lat: float
 
 # -------------------------------- Tools --------------------------------
 
@@ -35,7 +45,7 @@ client_ors = openrouteservice.Client(key=ors_api_key)
     title="Get Authenticated user Strava Stats",
     description="Return the Strava stats of the user as a JSON File ",
 )
-def get_athletes_stats() -> str :
+def get_user_stats() -> str :
     '''
     Output : A JSON Containing all the stats of the current user
     '''
@@ -104,8 +114,8 @@ def get_last_runs() -> str:
     title="Create Itinerary",
     description="Create an itinerary for the user",
 )
-def create_itinerary(start : tuple[float, float], 
-                    distance_km : int = 10
+def create_itinerary(starting_place : str = Field(description="The start of the itinerary", default="Opéra, Paris"), 
+                    distance_km : int = Field(description="The distance of the itinerary in km", default=10)
                     ) -> str :
     """
     Produces an itinerary for the user
@@ -188,17 +198,35 @@ def create_itinerary(start : tuple[float, float],
             return "https://www.google.com/maps/dir/?" + urlencode(params, quote_via=quote_plus)
 
 
+    def _get_coordinates(place_name : str) -> Coordinates:
+        """
+        Get the coordinates of a place name
+        """
+        geolocator = Nominatim(user_agent="my_geocoder_app")
+        try:
+            location = geolocator.geocode(place_name)
+        except (GeocoderTimedOut, GeocoderServiceError) as e:
+            print("Error:", e)
+            return 'Failed to get coordinates'
+        if location:
+            return (location.longitude, location.latitude)
+        else:
+            return 'Failed to get coordinates'
+
+
     if distance_km < 3:
         distance_km = 3
 
-    distance_m = int(distance_km * 1300)
+    distance_m = int(distance_km * 1100)
 
-    route = _get_route(distance_km, start, seed = seed)
+    start_coords = _get_coordinates(starting_place)
+
+    route = _get_route(distance_km, start_coords, seed = seed)
     route_distance = route["features"][0]["properties"]["summary"]["distance"]
 
     # Make sure that the route is the correct distance
     while route_distance < distance_m - 500 * distance_km / 10 or route_distance > distance_m + 500 * distance_km / 10:
-        route = _get_route(distance_km, start, seed = seed + 1)
+        route = _get_route(distance_km, start_coords, seed = seed + 1)
         route_distance = route["features"][0]["properties"]["summary"]["distance"]
 
         seed += 1
@@ -207,7 +235,7 @@ def create_itinerary(start : tuple[float, float],
     
     # Give the mapping coords for the route (points evenly distributed - about 2 points per km)
     mapping_coords = _get_mapping_coords(route, distance_km)
-    gmaps_directions_link = _get_gmaps_directions_link(start, mapping_coords)
+    gmaps_directions_link = _get_gmaps_directions_link(start_coords, mapping_coords)
 
     return gmaps_directions_link
 
@@ -277,3 +305,6 @@ def figures_speed_hr_by_activity(number_of_activity: int,
         out.append((getattr(act, "name", "Activity"), fig_hr, fig_speed))
 
     return out
+
+
+
