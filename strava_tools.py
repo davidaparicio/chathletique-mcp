@@ -1,12 +1,7 @@
 import os
 from stravalib.client import Client
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
-from pydantic import Field
-
-import mcp.types as types
 from mcp_utils import mcp
-import json
 load_dotenv()
 token = os.getenv('STRAVA_ACCESS_TOKEN')
 
