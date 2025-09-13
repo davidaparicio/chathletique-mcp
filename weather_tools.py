@@ -21,15 +21,13 @@ if not token:
     title="Get Weather Predictions",
     description="Return some weather informations based on the general overall of the user ",
 )
-def get_weather_prediction(positions:list)->str:
+def get_weather_prediction(positions:list):
     """
         Args:
-        lat (float): Latitude of the Location.
-        lon (float): Longitude of the location.
-        api_key (str): Your OpenWieatherMap API key.
+        positions (list): List of tuples containing the latitude and longitude of the user's last 20 runs.
 
         Returns:
-        str: A string describing the weather forecast at the specified location.
+        A dict describing the weather forecast at the specified location.
     """
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
 
