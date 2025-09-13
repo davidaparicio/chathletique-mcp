@@ -1,3 +1,5 @@
+import requests
+
 # Look at the coordinates of the 20 last runs to create an average latitude and longitude which will be used
 # to get the weather
 def get_user_localisation(positions:list)->tuple:
@@ -10,8 +12,8 @@ def get_user_localisation(positions:list)->tuple:
 
 
 
-@mcp.tool(description="Given a latitude and longitude, this function returns a string describing the weather forecast at the specified location.")
-def get_weather_forecast(positions:list)->str:
+#@mcp.tool(description="Given a latitude and longitude, this function returns a string describing the weather forecast at the specified location.")
+def get_weather_prediction(positions:list)->str:
     """
         Args:
         lat (float): Latitude of the Location.
@@ -27,6 +29,11 @@ def get_weather_forecast(positions:list)->str:
     params = {
     "lat": average_location[0],
     "lon": average_location[1],
+    "appid" : "a515a7dc9326035e665789c9cad88573", #hardcoded for now, should be in env variable
+    "exclude" : "minutely"
+
     }
 
     response = requests.get(base_url, params=params)
+
+    return response.json()
