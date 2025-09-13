@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 
 from stravalib.client import Client
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 
 import mcp.types as types
 from mcp_utils import mcp
@@ -20,7 +20,6 @@ if not token:
 
 client = Client(access_token=token)
 
-mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
 
 
 # -------------------------------- Tools --------------------------------
