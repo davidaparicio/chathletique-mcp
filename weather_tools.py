@@ -16,11 +16,11 @@ if not token:
 
 
 # -------------------------------- Tools --------------------------------
-"""
+
 @mcp.tool(
     title="Get Weather Predictions",
     description="Return some weather informations based on the overall position of the user ",
-)"""
+)
 def get_weather_prediction():
 
     """
