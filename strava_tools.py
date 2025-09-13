@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 
 
 from stravalib.client import Client
-from fastmcp import FastMCP
 
 import mcp.types as types
 from mcp_utils import mcp
