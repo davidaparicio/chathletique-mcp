@@ -1,6 +1,7 @@
 import requests
 import os
 from mcp_utils import mcp
+import json
 
 
 # -------------------------------- Globals --------------------------------
@@ -17,16 +18,20 @@ if not token:
 
 @mcp.tool(
     title="Get Weather Predictions",
-    description="Return some weather informations based on the general overall of the user ",
+    description="Return some weather informations based on the overall position of the user ",
 )
-def get_weather_prediction(positions:list):
-    """
-        Args:
-        positions (list): List of tuples containing the latitude and longitude of the user's last 20 runs.
+def get_weather_prediction():
 
-        Returns:
-        A dict describing the weather forecast at the specified location.
     """
+    Loads positions from run_positions.txt and returns weather forecast as a dict.
+    """
+    try:
+        with open("run_positions.txt", "r") as f:
+            positions = json.load(f)
+    except FileNotFoundError:
+        print("Error: run_positions.txt not found. Please generate run positions first.")
+        return None
+
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
 
     average_location = get_user_localisation(positions)
