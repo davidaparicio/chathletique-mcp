@@ -6,7 +6,7 @@ from pydantic import Field
 
 import mcp.types as types
 from mcp_utils import mcp
-
+import json
 load_dotenv()
 token = os.getenv('STRAVA_ACCESS_TOKEN')
 
@@ -28,7 +28,9 @@ def Get_Athletes_Stats() -> str :
     
     Output : A JSON Containing all the stats of the current user
     '''
-    pass 
+    athlete_id = client.get_athlete().id # APi call
+    ahtlete_stats = client.get_athlete_stats(athlete_id)
+    dict = {"recent_run_totals" : ahtlete_stats.recent_run_totals.model_dump_json(), "ytd_run_totals" : ahtlete_stats.ytd_run_totals.model_dump_json(), "all_run_totals" : ahtlete_stats.all_run_totals.model_dump_json()}
+    
+    return dict
 
-
-    return 'stats'
