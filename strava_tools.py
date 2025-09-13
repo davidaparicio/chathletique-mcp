@@ -1,17 +1,29 @@
 import os
-from stravalib.client import Client
+import json
 from dotenv import load_dotenv
+
+
+from stravalib.client import Client
+from mcp.server.fastmcp import FastMCP
+
+import mcp.types as types
 from mcp_utils import mcp
+
+
+# -------------------------------- Globals --------------------------------
+
 load_dotenv()
 token = os.getenv('STRAVA_ACCESS_TOKEN')
-
 if not token:
     print("Error: STRAVA_ACCESS_TOKEN not found in .env file")
     exit(1)
 
 client = Client(access_token=token)
 
+mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
 
+
+# -------------------------------- Tools --------------------------------
 
 
 @mcp.tool(
@@ -28,3 +40,46 @@ def Get_Athletes_Stats() -> str :
     
     return str(dict)
 
+
+
+
+@mcp.tool(
+    title="Get Last Runs",
+    description="Get the last runs from the user's Strava account and return them in a list for activity analysis",
+)
+def get_last_runs() -> str:
+    """
+    Get the last runs from the user's Strava account and return them in a list for activity analysis
+    This function will use the Strava API to get the last runs from the user's Strava account and return them in a list for activity analysis
+    The function will return a list of runs with the following information:
+    name, distance, type, start_date_local, moving_time, average_speed, max_speed, max_heartrate, average_heartrate, total_elevation_gain, average_speed
+    
+    """
+
+    text_result : str = ''
+
+    # Get the last 10 runs
+    activities = client.get_activities(limit=2)
+
+    # Extract the data from the activities
+    for activity in activities:
+        if activity.type != 'Run':
+            continue
+
+        activity_data = {
+            'name' : str(activity.name),
+            'distance' : str(activity.distance),
+            'type' : str(activity.type),
+            'start_date_local' : str(activity.start_date_local),
+            'moving_time' : str(activity.moving_time),
+            'average_speed' : str(activity.average_speed),
+            'max_speed' : str(activity.max_speed),
+            'max_heartrate' : str(activity.max_heartrate),
+            'average_heartrate' : str(activity.average_heartrate),
+            'total_elevation_gain' : str(activity.total_elevation_gain),
+            'average_speed' : str(activity.average_speed)
+        }
+
+        text_result += json.dumps(activity_data) + '\n'
+
+    return text_result
