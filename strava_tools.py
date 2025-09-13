@@ -9,8 +9,6 @@ import openrouteservice
 from matplotlib import pyplot as plt
 import numpy as np
 
-import mistralai
-from mistralai.models import UserMessage
 from pydantic import BaseModel, Field
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError
@@ -31,7 +29,6 @@ if not strava_api_key:
 
 client_strava = stravalib.Client(access_token=strava_api_key)
 client_ors = openrouteservice.Client(key=ors_api_key)
-client_mistral = mistralai.Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
 
 
 class Coordinates(BaseModel):
