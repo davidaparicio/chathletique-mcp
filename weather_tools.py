@@ -54,16 +54,18 @@ def get_weather_prediction()-> str:
 # Look at the coordinates of the 20 last runs to create an average latitude and longitude which will be used to get the weather
 def get_user_localisation(lines:list)->tuple:
     #preprocess positions from strings to tuples
-    positions = []
+    positions_x = []
+    position_y = []
     for line in lines:
         # Remove "root=" and brackets, then split by comma
         numbers = line.strip().replace("root=", "").strip("[]")
         lat, lon = map(float, numbers.split(","))
-        positions.append([lat, lon])
-    x_sum = sum(t[0] for t in positions)
-    y_sum = sum(t[1] for t in positions)
-    n = len(positions)
-    return (x_sum / n, y_sum / n)
+        positions_x.append(lat)
+        position_y.append(lon)
+    positions_x.sort()
+    position_y.sort()
+    n = len(positions_x)
+    return (positions_x[n//2], position_y[n//2]) # return median to avoid outliers
 
 
 
