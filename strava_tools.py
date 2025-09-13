@@ -78,12 +78,12 @@ def get_last_runs() -> str:
             'type' : str(activity.type),
             'start_date_local' : str(activity.start_date_local),
             'moving_time' : str(activity.moving_time),
-            'average_speed' : str(activity.average_speed),
-            'max_speed' : str(activity.max_speed),
+            'average_speed (m/s)' : str(activity.average_speed),
+            'max_speed (m/s)' : str(activity.max_speed),
             'max_heartrate' : str(activity.max_heartrate),
             'average_heartrate' : str(activity.average_heartrate),
             'total_elevation_gain' : str(activity.total_elevation_gain),
-            'average_speed' : str(activity.average_speed)
+            'average_speed (m/s)' : str(activity.average_speed)
         }
 
         runs_position.append(activity.start_latlng)
