@@ -8,4 +8,4 @@ from weather_tools import get_weather_prediction
 
 
 if __name__ == "__main__":
-    mcp.run(transport="streamable-http", port = 3000, stateless_http = True)
+    mcp.run(transport="streamable-http")
