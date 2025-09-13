@@ -42,7 +42,6 @@ def get_weather_prediction():
     "exclude" : "current,minutely,alerts",
 
     }
-    print("params", params)
 
     response = requests.get(base_url, params=params)
     response = filter_weather_data(response.json()) # filter out to keep relevant data
