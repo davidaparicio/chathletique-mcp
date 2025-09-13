@@ -1,4 +1,4 @@
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from pydantic import Field
 
 import mcp.types as types
@@ -39,3 +39,7 @@ def greet_user(
     }
 
     return f"{styles.get(style, styles['friendly'])} for someone named {name}."
+
+if __name__ == "__main__":
+    mcp.run(transport="streamable-http")
+
