@@ -1,6 +1,7 @@
 import os
 import math
 import json
+from dotenv import load_dotenv
 
 
 import stravalib
@@ -9,7 +10,7 @@ import mcp.types as types
 import openrouteservice
 
 
-from main import mcp
+from mcp_utils import mcp
 
 from dotenv import load_dotenv
 
