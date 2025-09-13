@@ -52,6 +52,7 @@ def get_last_runs() -> str:
     """
 
     text_result : str = ''
+    runs_position : list = []
 
     # Get the last 10 runs
     activities = client.get_activities(limit=2)
@@ -75,6 +76,12 @@ def get_last_runs() -> str:
             'average_speed' : str(activity.average_speed)
         }
 
+        runs_position.append((activity.start_latlng[0], activity.start_latlng[1]))
+
         text_result += json.dumps(activity_data) + '\n'
+
+    # Save runs_position to a text file
+    with open("run_positions.txt", "w") as f:
+        json.dump(runs_position, f)
 
     return text_result
