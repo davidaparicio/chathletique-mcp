@@ -30,7 +30,7 @@ mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
     title="Get Authenticated user Strava Stats",
     description="Return the Strava stats of the user as a JSON File ",
 )
-def Get_Athletes_Stats() -> str :
+def get_athletes_stats() -> str :
     '''
     Output : A JSON Containing all the stats of the current user
     '''
