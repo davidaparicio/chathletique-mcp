@@ -45,9 +45,7 @@ def get_weather_prediction():
     print("params", params)
 
     response = requests.get(base_url, params=params)
-    print(response.json())
     response = filter_weather_data(response.json()) # filter out to keep relevant data
-    print(response)
     return response
 
 
