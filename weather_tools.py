@@ -1,7 +1,28 @@
 import requests
+import os
+from dotenv import load_dotenv
+from mcp.server.fastmcp import FastMCP
+from mcp_utils import mcp
 
 
-#@mcp.tool(description="Given a latitude and longitude, this function returns a string describing the weather forecast at the specified location.")
+# -------------------------------- Globals --------------------------------
+
+load_dotenv()
+token = os.getenv('WEATHER_API_KEY')
+if not token:
+    print("Error: WEATHER_API_KEY not found in .env file")
+    exit(1)
+
+
+mcp = FastMCP("Echo Server", port=3000, stateless_http=True, debug=True)
+
+
+# -------------------------------- Tools --------------------------------
+
+@mcp.tool(
+    title="Get Weather Predictions",
+    description="Return some weather informations based on the general overall of the user ",
+)
 def get_weather_prediction(positions:list)->str:
     """
         Args:
@@ -18,16 +39,18 @@ def get_weather_prediction(positions:list)->str:
     params = {
     "lat": average_location[0],
     "lon": average_location[1],
-    "appid" : "a515a7dc9326035e665789c9cad88573", #hardcoded for now, should be in env variable
-    "exclude" : "current,minutely",
+    "appid" : token, #hardcoded for now, should be in env variable
+    "exclude" : "current,minutely,alerts",
 
     }
 
     response = requests.get(base_url, params=params)
-    response = filter_weather_data(response.json())
+    response = filter_weather_data(response.json()) # filter out to keep relevant data
     return response
 
 
+
+# -------------------------------- Useful functions --------------------------------
 
 # Look at the coordinates of the 20 last runs to create an average latitude and longitude which will be used to get the weather
 def get_user_localisation(positions:list)->tuple:
