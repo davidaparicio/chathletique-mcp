@@ -6,9 +6,12 @@ from stravalib.client import Client
 
 from mcp_utils import mcp
 
+from dotenv import load_dotenv
+
+
 
 # -------------------------------- Globals --------------------------------
-
+load_dotenv()
 token = os.getenv('STRAVA_ACCESS_TOKEN')
 if not token:
     print("Error: STRAVA_ACCESS_TOKEN not found in .env file")
@@ -76,12 +79,13 @@ def get_last_runs() -> str:
             'average_speed' : str(activity.average_speed)
         }
 
-        runs_position.append((activity.start_latlng[0], activity.start_latlng[1]))
+        runs_position.append(activity.start_latlng)
 
         text_result += json.dumps(activity_data) + '\n'
 
     # Save runs_position to a text file
-    with open("run_positions.txt", "w") as f:
-        json.dump(runs_position, f)
+        with open("run_positions.txt", "w") as f:
+            for pos in runs_position:
+                f.write(str(pos) + "\n")
 
     return text_result
