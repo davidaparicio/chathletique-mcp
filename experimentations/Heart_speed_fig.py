@@ -18,7 +18,7 @@ import json
 
 def figures_speed_hr_by_activity(client, number_of_activity: int,
                                  resolution: str = "high",
-                                 series_type: str = "time"):
+                                 series_type: str = "time", slice_step: int = 10) -> str:
     """
     Retourne un JSON contenant les données de fréquence cardiaque et vitesse
     pour les dernières activités.
@@ -61,6 +61,13 @@ def figures_speed_hr_by_activity(client, number_of_activity: int,
 
         speed_kmh = vel * 3.6 if vel is not None else None
 
+        if t is not None:
+            t = t[::slice_step]
+        if hr is not None:
+            hr = hr[::slice_step]
+        if speed_kmh is not None:
+            speed_kmh = speed_kmh[::slice_step]
+
         # Conversion en listes pour JSON
         activity_data = {
             "name": getattr(act, "name", "Activity"),
@@ -74,4 +81,11 @@ def figures_speed_hr_by_activity(client, number_of_activity: int,
     # Retour JSON (string)
     return json.dumps(out, indent=2)
 
-print(figures_speed_hr_by_activity(client, number_of_activity=1))
+activities_data = figures_speed_hr_by_activity(client, number_of_activity=1)
+
+# Sauvegarde en JSON
+output_file = "activities.json"
+with open(output_file, "w", encoding="utf-8") as f:
+    json.dump(activities_data, f, indent=2, ensure_ascii=False)
+
+print(f"✅ Données sauvegardées dans {output_file}")

@@ -237,12 +237,12 @@ def create_itinerary(starting_place : str = Field(description="The start of the 
 
 
 @mcp.tool(
-    title="Get Heart Rate and Speed ",
-    description="Get heart rate and speed for the last activities of the user. By setting number_of_activity, you can choose how many activities you want to analyze. 5 activies : the last 5 activities. The output can be a list of dicts (JSON-friendly) or a list of pandas DataFrames.",
+    title="Get Heart Rate and Speed by Activity",
+    description="Get heart rate and speed for the last activities of the user. By setting number_of_activity, you can choose how many activities you want to analyze. 5 activies : the last 5 activities. The output can be a list of dicts (JSON-friendly) or a list of pandas DataFrames. You can also chose the slice step to reduce the number of points in the output. For example, a slice_step of 10 will take one point every 10 seconds.",
 )
 def speed_hr_by_activity(number_of_activity: int,
                                  resolution: str = "high",
-                                 series_type: str = "time"):
+                                 series_type: str = "time",slice_step: int = 10) -> str:
     """
     Retourne un JSON contenant les données de fréquence cardiaque et vitesse
     pour les dernières activités.
@@ -284,6 +284,13 @@ def speed_hr_by_activity(number_of_activity: int,
                 vel = None
 
         speed_kmh = vel * 3.6 if vel is not None else None
+
+        if t is not None:
+            t = t[::slice_step]
+        if hr is not None:
+            hr = hr[::slice_step]
+        if speed_kmh is not None:
+            speed_kmh = speed_kmh[::slice_step]
 
         # Conversion en listes pour JSON
         activity_data = {
