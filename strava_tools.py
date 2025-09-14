@@ -88,7 +88,8 @@ def get_last_runs() -> str:
             'max_heartrate' : str(activity.max_heartrate),
             'average_heartrate' : str(activity.average_heartrate),
             'total_elevation_gain' : str(activity.total_elevation_gain),
-            'average_speed (m/s)' : str(activity.average_speed)
+            'average_speed (m/s)' : str(activity.average_speed),
+            'average_pace (min/km)' : str(1000 / activity.average_speed / 60),
         }
 
         text_result += json.dumps(activity_data) + '\n'
@@ -288,13 +289,15 @@ def speed_hr_by_activity(number_of_activity: int,
             hr = hr[::slice_step]
         if speed_kmh is not None:
             speed_kmh = speed_kmh[::slice_step]
+        
+        pace_min_per_km = (1000 / (speed_kmh / 3.6)) / 60 if speed_kmh is not None else None
 
         # Conversion en listes pour JSON
         activity_data = {
             "name": getattr(act, "name", "Activity"),
             "time_s": t.tolist() if t is not None else [],
             "heartrate_bpm": hr.tolist() if hr is not None else [],
-            "speed_kmh": speed_kmh.tolist() if speed_kmh is not None else []
+            "pace_min_per_km": pace_min_per_km.tolist() if pace_min_per_km is not None else [],
         }
 
         out.append(activity_data)
