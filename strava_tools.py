@@ -168,30 +168,34 @@ def create_itinerary(starting_place : str = Field(description="The start of the 
             origin_coords: tuple[float, float],
             waypoints_coords_list: list[tuple[float, float]] | None = None,
         ) -> str:
-            """
-            Build a Google Maps directions URL.
+        """
+        Build a Google Maps directions URL (on foot / walking mode).
 
-            Inputs are (lon, lat) tuples (GeoJSON-style). Output uses "lat,lon" order.
-            If waypoints are provided, creates a loop: origin -> waypoints... -> origin.
-            If no waypoints, returns a link to navigate to the origin (from 'Your location').
-            """
-            lon0, lat0 = origin_coords
-            origin = f"{lat0},{lon0}"
+        Inputs are (lon, lat) tuples (GeoJSON-style). Output uses "lat,lon" order.
+        If waypoints are provided, creates a loop: origin -> waypoints... -> origin.
+        If no waypoints, returns a link to navigate to the origin (from 'Your location').
+        """
+        lon0, lat0 = origin_coords
+        origin = f"{lat0},{lon0}"
 
-            if waypoints_coords_list:
-                # Convert (lon, lat) -> "lat,lon" and drop duplicates of origin
-                wps = [f"{lat},{lon}" for lon, lat in waypoints_coords_list if f"{lat},{lon}" != origin]
-                params = {
-                    "api": 1,
-                    "origin": origin,
-                    "destination": origin,
-                    "waypoints": "|".join(wps),
-                }
-                return "https://www.google.com/maps/dir/?" + urlencode(params, quote_via=quote_plus)
+        params = {
+            "api": 1,
+            "travelmode": "walking",  # <-- spécifier la marche
+        }
 
+        if waypoints_coords_list:
+            # Convert (lon, lat) -> "lat,lon" and drop duplicates of origin
+            wps = [f"{lat},{lon}" for lon, lat in waypoints_coords_list if f"{lat},{lon}" != origin]
+            params.update({
+                "origin": origin,
+                "destination": origin,
+                "waypoints": "|".join(wps),
+            })
+        else:
             # No waypoints: just point to the origin as destination
-            params = {"api": 1, "destination": origin}
-            return "https://www.google.com/maps/dir/?" + urlencode(params, quote_via=quote_plus)
+            params["destination"] = origin
+
+        return "https://www.google.com/maps/dir/?" + urlencode(params, quote_via=quote_plus)
 
 
     def _get_coordinates(place_name : str) -> Coordinates:
