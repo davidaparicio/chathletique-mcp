@@ -6,10 +6,7 @@ from dotenv import load_dotenv
 import stravalib
 from urllib.parse import urlencode, quote_plus
 import openrouteservice
-from matplotlib import pyplot as plt
-import pandas as pd
 import numpy as np
-from typing import Literal
 
 from pydantic import BaseModel, Field
 from geopy.geocoders import Nominatim
