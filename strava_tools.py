@@ -237,7 +237,8 @@ def create_itinerary(starting_place : str = Field(description="The start of the 
 )
 def figures_speed_hr_by_activity(number_of_activity: int,
                                  resolution: str = "high",
-                                 series_type: str = "time"):
+                                 series_type: str = "time",
+                                 slice_step: int = 10):
     """
     Retourne une liste de tuples: [(activity_name, fig_hr, fig_speed), ...]
     - fig_hr : courbe FC (rouge) en fonction du temps (s)
@@ -271,7 +272,6 @@ def figures_speed_hr_by_activity(number_of_activity: int,
 
         speed_kmh = vel * 3.6 if vel is not None else None
 
-<<<<<<< HEAD
         if t is not None:
             t = t[::slice_step]
         if hr is not None:
@@ -288,33 +288,5 @@ def figures_speed_hr_by_activity(number_of_activity: int,
             "heartrate_bpm": hr.tolist() if hr is not None else [],
             "pace_min_per_km": pace_min_per_km.tolist() if pace_min_per_km is not None else [],
         }
-=======
-        # Figure 1: Heart rate (rouge)
-        fig_hr = plt.figure()
-        if (t is not None) and (hr is not None) and len(t) == len(hr) and len(hr) > 0:
-            plt.plot(t, hr, color="red")
-            plt.xlabel("Time (s)")
-            plt.ylabel("Heart rate (bpm)")
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Heart rate")
-        else:
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Heart rate")
-            plt.text(0.5, 0.5, "No heart rate stream", ha="center", va="center", transform=plt.gca().transAxes)
-
-        # Figure 2: Speed (bleu)
-        fig_speed = plt.figure()
-        if (t is not None) and (speed_kmh is not None) and len(t) == len(speed_kmh) and len(speed_kmh) > 0:
-            plt.plot(t, speed_kmh, color="blue")
-            plt.xlabel("Time (s)")
-            plt.ylabel("Speed (km/h)")
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Speed")
-        else:
-            plt.title(f"{getattr(act, 'name', 'Activity')} – Speed")
-            plt.text(0.5, 0.5, "No speed stream", ha="center", va="center", transform=plt.gca().transAxes)
-
-        out.append((getattr(act, "name", "Activity"), fig_hr, fig_speed))
-
-    return out
-
->>>>>>> 6a6153d (readme)
 
 
