@@ -1,4 +1,12 @@
-# Strava Coach MCP Server
+#  Strava Coach MCP Server
+
+### 🏆 MISTRAL MCP HACKATHON WINNER 🏆
+
+@Loucienne
+@leotrois	
+@frogens
+@Ulysse6307	
+@colinfrisch
 
 A Model Context Protocol (MCP) server that provides AI assistants with access to Strava running data, route planning, and weather information. This server enables intelligent running coaching by combining Strava activity analysis with real-time weather data and route generation capabilities.
 
