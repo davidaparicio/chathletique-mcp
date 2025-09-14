@@ -1,103 +1,188 @@
-# mcp-server-template-python
+# Strava Coach MCP Server
 
-A very simple Python template for building MCP servers using Streamable HTTP transport.
+A Model Context Protocol (MCP) server that provides AI assistants with access to Strava running data, route planning, and weather information. This server enables intelligent running coaching by combining Strava activity analysis with real-time weather data and route generation capabilities.
 
-## Overview
-This template provides a foundation for creating MCP servers that can communicate with AI assistants and other MCP clients. It includes a simple HTTP server implementation with example tools, resources & prompts to help you get started building your own MCP integrations.
+## Features
 
-## Prerequisites
-- Install uv (https://docs.astral.sh/uv/getting-started/installation/)
+### Strava Integration
+- **User Statistics**: Access comprehensive running stats (recent, year-to-date, and all-time totals)
+- **Activity Analysis**: Retrieve detailed information about recent runs including pace, heart rate, and elevation
+- **Performance Visualization**: Generate heart rate and speed charts for activity analysis
 
-## Installation
+### Route Planning
+- **Intelligent Itinerary Creation**: Generate running routes of specified distances from any starting location
+- **Round-trip Route Generation**: Create circular routes that return to the starting point
+- **Google Maps Integration**: Automatically generate Google Maps directions links for easy navigation
 
-1. Clone the repository:
+### Weather Intelligence
+- **Location-based Forecasting**: Get weather predictions for your usual running areas
+- **Activity-derived Location**: Automatically determine your location from previous run data
+- **Detailed Weather Data**: Access temperature, humidity, precipitation, and wind information
 
-```bash
-git clone git@github.com:alpic-ai/mcp-server-template-python.git
-cd mcp-server-template-python
+## Setup
+
+### Prerequisites
+- Python 3.13+
+- Active Strava account with API access
+- OpenWeatherMap API key
+- OpenRouteService API key
+
+### Environment Variables
+Create a `.env` file in the project root with the following variables:
+
+```env
+STRAVA_ACCESS_TOKEN=your_strava_access_token
+WEATHER_API_KEY=your_openweathermap_api_key
+ORS_KEY=your_openrouteservice_api_key
 ```
 
-2. Install python version & dependencies:
+#### Getting API Keys (all for free)
 
+**Strava API Token:**
+1. Go to [Strava API Settings](https://www.strava.com/settings/api)
+2. Create an application if you haven't already
+3. Use the "Create & View a Refresh Token" tool or follow Strava's OAuth flow
+4. Copy the access token
+
+**OpenWeatherMap API Key:**
+1. Sign up at [OpenWeatherMap](https://openweathermap.org/api)
+2. Subscribe to the 5 Day / 3 Hour Forecast API (free tier available)
+3. Copy your API key
+
+**OpenRouteService API Key:**
+1. Register at [OpenRouteService](https://openrouteservice.org/)
+2. Get your free API key from the dashboard
+
+### Installation
+
+1. **Clone and setup:**
 ```bash
-uv python install
-uv sync --locked
+git clone <your-repo-url>
+cd MCP-hackathon
+```
+
+2. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Configure environment:**
+```bash
+# Copy and edit the .env file with your API keys
+cp .env.example .env
+# Edit .env with your actual API keys
 ```
 
 ## Usage
 
-Start the server on port 3000:
+### Starting the Server
 
 ```bash
-uv run main.py
+python main.py
 ```
 
-## Running the Inspector
+The server will start on port 3000 and be accessible at `http://localhost:3000/mcp`. Else you can deploy it directly on huggingface using https://huggingface.co/spaces/Jofthomas/MCP_Server_Template/blob/main/server.py
 
-### Requirements
-- Node.js: ^22.7.5
+### Testing with MCP Inspector
 
-### Quick Start (UI mode)
-To get up and running right away with the UI, just execute the following:
+1. **Install and run the MCP Inspector:**
 ```bash
 npx @modelcontextprotocol/inspector
 ```
 
-The inspector server will start up and the UI will be accessible at http://localhost:6274.
+2. **Configure connection:**
+- Transport Type: `Streamable HTTP`
+- URL: `http://127.0.0.1:3000/mcp`
 
-You can test your server locally by selecting:
-- Transport Type: Streamable HTTP
-- URL: http://127.0.0.1:3000/mcp
+## 📋 Available Tools
 
-## Development
+### `get_user_stats()`
+Retrieves comprehensive Strava statistics for the authenticated user.
 
-### Adding New Tools
+**Returns:** JSON containing recent, year-to-date, and all-time running totals
 
-To add a new tool, modify `main.py`:
-
-```python
-@mcp.tool(
-    title="Your Tool Name",
-    description="Tool Description for the LLM",
-)
-async def new_tool(
-    tool_param1: str = Field(description="The description of the param1 for the LLM"), 
-    tool_param2: float = Field(description="The description of the param2 for the LLM") 
-)-> str:
-    """The new tool underlying method"""
-    result = await some_api_call(tool_param1, tool_param2)
-    return result
+**Example response:**
+```json
+{
+  "recent_run_totals": {"distance": 50000, "time": 12000, "count": 5},
+  "ytd_run_totals": {"distance": 500000, "time": 120000, "count": 50},
+  "all_run_totals": {"distance": 2000000, "time": 480000, "count": 200}
+}
 ```
 
-### Adding New Resources
+### `get_last_runs()`
+Fetches detailed information about the user's most recent running activities.
 
-To add a new resource, modify `main.py`:
+**Returns:** Formatted text with activity details including distance, pace, heart rate, and elevation
 
+**Data includes:**
+- Activity name and date
+- Distance and duration
+- Average and maximum speed
+- Heart rate metrics
+- Elevation gain
+
+### `create_itinerary(starting_place, distance_km)`
+Generates a running route of specified distance starting from a given location.
+
+**Parameters:**
+- `starting_place` (str): Starting location (e.g., "Opéra, Paris")
+- `distance_km` (int): Desired route distance in kilometers
+
+**Returns:** Google Maps directions URL for the generated route
+
+**Example:**
 ```python
-@mcp.resource(
-    uri="your-scheme://{param1}/{param2}",
-    description="Description of what this resource provides",
-    name="Your Resource Name",
-)
-def your_resource(param1: str, param2: str) -> str:
-    """The resource template implementation"""
-    # Your resource logic here
-    return f"Resource content for {param1} and {param2}"
+# Generate a 10km route starting from central Paris
+create_itinerary("Opéra, Paris", 10)
 ```
 
-The URI template uses `{param_name}` syntax to define parameters that will be extracted from the resource URI and passed to your function.
+### `get_weather_prediction()`
+Provides weather forecast for the user's typical running area based on previous activity locations.
 
-### Adding New Prompts
+**Returns:** Detailed weather forecast including temperature, humidity, precipitation probability, and wind conditions
 
-To add a new prompt , modify `main.py`:
+**Note:** Requires running `get_last_runs()` first to establish location data.
 
-```python
-@mcp.prompt("")
-async def your_prompt(
-    prompt_param: str = Field(description="The description of the param for the user")
-) -> str:
-    """Generate a helpful prompt"""
+### `figures_speed_hr_by_activity(number_of_activity, resolution, series_type)`
+Generates heart rate and speed visualization charts for recent activities.
 
-    return f"You are a friendly assistant, help the user and don't forget to {prompt_param}."
+**Parameters:**
+- `number_of_activity` (int): Number of recent activities to analyze
+- `resolution` (str): Data resolution ("high", "medium", "low")
+- `series_type` (str): Series type ("time" or "distance")
 
+**Returns:** List of tuples containing activity names and matplotlib figures
+
+## Architecture
+
+The server is built using:
+- **FastMCP**: For MCP protocol implementation
+- **Stravalib**: For Strava API integration
+- **OpenRouteService**: For route generation
+- **OpenWeatherMap API**: For weather data
+- **Matplotlib**: For data visualization
+
+### Project Structure
 ```
+hack/
+├── main.py              # MCP server entry point
+├── strava_tools.py      # Strava integration tools
+├── weather_tools.py     # Weather prediction tools
+├── mcp_utils.py         # MCP server configuration
+├── experimentations/    # Development and testing scripts
+├── requirements.txt     # Python dependencies
+└── README.md           # This file
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+## Use Cases
+
+- **AI Running Coach**: Integrate with Le Chat or other AI assistants for personalized running advice
+- **Training Analysis**: Analyze performance trends and provide insights
+- **Route Discovery**: Generate new running routes based on preferences and weather
+- **Weather-aware Planning**: Plan runs based on upcoming weather conditions
