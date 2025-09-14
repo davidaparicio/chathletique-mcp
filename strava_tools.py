@@ -68,7 +68,6 @@ def get_last_runs() -> str:
     """
 
     text_result : str = ''
-    runs_position : list = []
 
     # Get the last 10 runs
     activities = client_strava.get_activities(limit=2)
@@ -92,14 +91,8 @@ def get_last_runs() -> str:
             'average_speed (m/s)' : str(activity.average_speed)
         }
 
-        runs_position.append(activity.start_latlng)
-
         text_result += json.dumps(activity_data) + '\n'
 
-    # Save runs_position to a text file
-        with open("run_positions.txt", "w") as f:
-            for pos in runs_position:
-                f.write(str(pos) + "\n")
 
     return text_result
 
