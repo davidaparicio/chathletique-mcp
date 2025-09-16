@@ -66,19 +66,35 @@ ORS_KEY=your_openrouteservice_api_key
 1. **Clone and setup:**
 ```bash
 git clone <your-repo-url>
-cd MCP-hackathon
+cd chathletique-mcp
 ```
 
-2. **Install dependencies:**
+2. **Install Python dependencies with uv:**
 ```bash
-pip install -r requirements.txt
+# Install uv if you don't have it (fast Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install project dependencies
+uv sync
+
+# Install development dependencies (for contributing)
+uv sync --extra dev
 ```
 
 3. **Configure environment:**
 ```bash
-# Copy and edit the .env file with your API keys
+# Create .env file with your API keys
 cp .env.example .env
 # Edit .env with your actual API keys
+```
+
+4. **Set up code quality tools (for contributors):**
+```bash
+# Install pre-commit hooks for automatic code quality checks
+uv run pre-commit install
+
+# Optional: Run pre-commit on all files to check everything
+uv run pre-commit run --all-files
 ```
 
 ## Usage
@@ -86,10 +102,15 @@ cp .env.example .env
 ### Starting the Server
 
 ```bash
-python main.py
+# Using uv (recommended)
+uv run python -m src.strava_mcp.main
+
+# Or activate the environment and run directly
+source .venv/bin/activate  # On Unix/macOS
+python -m src.strava_mcp.main
 ```
 
-The server will start on port 3000 and be accessible at `http://localhost:3000/mcp`. Else you can deploy it directly on huggingface using https://huggingface.co/spaces/Jofthomas/MCP_Server_Template/blob/main/server.py
+The server will start on port 3000 and be accessible at `http://localhost:3000/mcp`.
 
 ### Testing with MCP Inspector
 
@@ -173,15 +194,123 @@ The server is built using:
 
 ### Project Structure
 ```
-hack/
-├── main.py              # MCP server entry point
-├── strava_tools.py      # Strava integration tools
-├── weather_tools.py     # Weather prediction tools
-├── mcp_utils.py         # MCP server configuration
-├── experimentations/    # Development and testing scripts
-├── requirements.txt     # Python dependencies
+chathletique-mcp/
+├── src/strava_mcp/
+│   ├── __init__.py      # Package initialization
+│   ├── main.py          # MCP server entry point
+│   ├── strava_tools.py  # Strava API integration tools
+│   ├── weather_tools.py # Weather prediction tools
+│   └── mcp_utils.py     # MCP server configuration
+├── tests/               # Test suite
+├── .pre-commit-config.yaml  # Code quality configuration
+├── pyproject.toml       # Project configuration and dependencies
+├── uv.lock             # Lock file for reproducible installs
 └── README.md           # This file
 ```
+
+## 🛠️ Development & Code Quality
+
+This project uses modern Python development tools for maintaining high code quality:
+
+### Code Quality Tools
+
+- **Ruff**: Ultra-fast Python linter and formatter with comprehensive rules
+- **MyPy**: Static type checking for better code reliability
+- **Pre-commit**: Automatic code quality checks before each commit
+- **Pytest**: Testing framework with coverage reporting
+- **Black**: Code formatting (integrated with Ruff)
+
+### Pre-commit Hooks
+
+The project includes automatic quality checks that run before each commit:
+
+1. **Code formatting**: Automatic code formatting with Ruff
+2. **Import sorting**: Organize imports consistently
+3. **Linting**: Check for bugs, security issues, and style problems
+4. **Type checking**: Verify type annotations with MyPy
+5. **Docstring validation**: Enforce Google-style docstrings
+6. **Security scanning**: Detect potential security vulnerabilities
+7. **Spell checking**: Catch typos in code and documentation
+
+### Contributing Guidelines
+
+1. **Install development dependencies:**
+   ```bash
+   uv sync --extra dev
+   uv run pre-commit install
+   ```
+
+2. **Run tests:**
+   ```bash
+   uv run pytest
+   ```
+
+3. **Run quality checks manually:**
+   ```bash
+   # Run all pre-commit hooks
+   uv run pre-commit run --all-files
+
+   # Run specific tools
+   uv run ruff check src/
+   uv run mypy src/
+   ```
+
+4. **Commit your changes:**
+   ```bash
+   git add .
+   git commit -m "Your commit message"
+   # Pre-commit hooks run automatically
+   ```
+
+All code is automatically checked for:
+- **Security vulnerabilities** (Bandit-style checks)
+- **Code style** (PEP 8 compliance)
+- **Import organization** (isort-style)
+- **Type annotations** (MyPy checking)
+- **Documentation quality** (Google docstring format)
+- **Common Python mistakes** (Bugbear checks)
+
+### 🇫🇷 Installation et Pre-commit (French)
+
+**Installation rapide avec uv :**
+```bash
+# 1. Cloner le projet
+git clone <votre-repo-url>
+cd chathletique-mcp
+
+# 2. Installer uv (gestionnaire de paquets Python ultra-rapide)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 3. Installer les dépendances
+uv sync --extra dev
+
+# 4. Configurer les hooks pre-commit
+uv run pre-commit install
+```
+
+**Comment fonctionne pre-commit :**
+
+Pre-commit est un système qui exécute automatiquement des vérifications de qualité de code **avant chaque commit**.
+
+**Avantages :**
+- ✅ **Code toujours propre** : Impossible de commiter du code mal formaté
+- ✅ **Sécurité automatique** : Détection des vulnérabilités courantes
+- ✅ **Style cohérent** : Formatage automatique selon les standards Google
+- ✅ **Documentation forcée** : Docstrings obligatoires et bien formatées
+- ✅ **Imports organisés** : Tri automatique des imports
+
+**Que se passe-t-il lors d'un commit :**
+1. Vous faites `git commit -m "mon message"`
+2. Pre-commit lance automatiquement tous les outils de qualité
+3. Si des problèmes sont détectés, le commit est **bloqué**
+4. Les outils corrigent automatiquement ce qu'ils peuvent
+5. Vous revérifiez les modifications et recommitez
+
+**Outils inclus :**
+- **Ruff** : Linter ultra-rapide (remplace flake8, isort, black)
+- **MyPy** : Vérification des types Python
+- **Codespell** : Correction des fautes de frappe
+- **Security checks** : Détection de failles de sécurité
 
 ## License
 

@@ -1,5 +1,6 @@
 .env
 venv/
+experimentations/
 
 supp.ipynb
 __pycache__/
