@@ -1,6 +1,6 @@
 import requests
 import os
-from mcp_utils import mcp
+from .mcp_utils import mcp
 from dotenv import load_dotenv
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut, GeocoderServiceError

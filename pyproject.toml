@@ -1,7 +1,109 @@
 [project]
-name = "hack"
+name = "strava-coach-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Model Context Protocol server providing AI assistants with Strava running data, route planning, and weather information for intelligent running coaching"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.13"
-dependencies = []
+authors = [
+    { name = "Colin Frisch", email = "your.email@example.com" }
+]
+keywords = ["strava", "mcp", "running", "ai", "coaching", "weather", "route-planning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    # Core MCP framework
+    "fastmcp>=2.12.3",
+    "pydantic>=2.11.9",
+    
+    # API clients
+    "stravalib>=2.4",
+    "openrouteservice>=2.3.3",
+    "requests>=2.32.5",
+    
+    # Data processing
+    "numpy>=2.3.3",
+    "matplotlib>=3.0.0",
+    
+    # Geocoding
+    "geopy>=2.4.1",
+    
+    # Environment variables
+    "python-dotenv>=1.1.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/colinfrisch/Chathletique-MCP"
+Repository = "https://github.com/colinfrisch/Chathletique-MCP"
+Issues = "https://github.com/colinfrisch/Chathletique-MCP/issues"
+
+[project.scripts]
+strava-coach-mcp = "main:main"
+
+[project.optional-dependencies]
+dev = [
+    "black>=25.1.0",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "mypy>=1.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/strava_mcp"]
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-mock>=3.15.0",
+]
