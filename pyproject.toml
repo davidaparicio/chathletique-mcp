@@ -68,6 +68,55 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/chathletique_mcp"]
 
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+lint.select = [
+    # "ANN", # annotations TODO - enable when ready for strict type annotations
+    "B",   # bugbear - catches common Python gotchas
+    "C4",  # comprehensions - better list/dict comprehensions
+    "DTZ", # naive datetime - timezone awareness
+    "E",   # style errors
+    "F",   # flakes - undefined variables, imports
+    "I",   # import sorting - replaces isort
+    "ISC", # string concatenation
+    "N",   # naming conventions
+    "PGH", # pygrep-hooks
+    "PIE", # miscellaneous improvements
+    "PLC", # pylint convention
+    "PLE", # pylint error
+    # "PLR", # pylint refactor TODO - enable for more aggressive refactoring suggestions
+    "PLW", # pylint warning
+    "Q",   # quotes
+    "RUF", # Ruff-specific rules
+    "S",   # security - bandit security checks
+    "SIM", # simplify - code simplification suggestions
+    "T10", # debugger - detect debugger statements
+    "UP",  # upgrade - modern Python syntax
+    "W",   # style warnings
+    "YTT", # sys.version checks
+]
+lint.extend-ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "S101",   # Use of `assert` detected (pytest uses asserts)
+    "B017",   # `assertRaises(Exception)` should be considered evil
+    "PGH004", # Use specific rule codes when using `noqa`
+    "B905",   # `zip()` without an explicit `strict=` parameter
+    "N802",   # Function name should be lowercase (MCP tools may have different conventions)
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "S310",   # Audit URL open for permitted schemes
+    "S603",   # `subprocess` call: check for execution of untrusted input
+    "ISC001", # Conflicts with ruff format
+    "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
+]
+extend-exclude = ["docs", "build", "venv", ".venv"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["strava_mcp"]
+
 [tool.black]
 line-length = 88
 target-version = ['py313']
@@ -92,18 +141,43 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+show_error_codes = true
 
 [tool.pytest.ini_options]
+addopts = "-ra -q --cov=src/strava_mcp --cov-report=term-missing --cov-report=html"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
-]
 markers = [
     "slow: marks tests as slow",
     "integration: marks tests as integration tests",
 ]
+
+[tool.coverage.run]
+source = ["src/strava_mcp"]
+branch = true
+omit = [
+    "tests/*",
+    "setup.py",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+    "except ImportError:",
+    "@abstractmethod",
+]
+ignore_errors = true
+show_missing = true
 

@@ -1,19 +1,19 @@
-import os
-import math
+"""Strava API integration tools for activity analysis and route planning."""
+
 import json
-from dotenv import load_dotenv
+import math
+import os
+from urllib.parse import quote_plus, urlencode
 
-import stravalib
-from urllib.parse import urlencode, quote_plus
-import openrouteservice
 import numpy as np
-
-from pydantic import BaseModel, Field
+import openrouteservice
+import stravalib
+from dotenv import load_dotenv
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+from pydantic import BaseModel, Field
 
 from .mcp_utils import mcp
-
 
 # -------------------------------- Globals --------------------------------
 load_dotenv()
@@ -28,6 +28,13 @@ client_ors = openrouteservice.Client(key=ors_api_key)
 
 
 class Coordinates(BaseModel):
+    """Geographic coordinates model.
+
+    Attributes:
+        lon: Longitude in decimal degrees.
+        lat: Latitude in decimal degrees.
+    """
+
     lon: float
     lat: float
 
@@ -40,8 +47,11 @@ class Coordinates(BaseModel):
     description="Return the Strava stats of the user as a JSON File ",
 )
 def get_user_stats() -> str:
-    """
-    Output : A JSON Containing all the stats of the current user
+    """Get current user's Strava statistics.
+
+    Returns:
+        str: JSON string containing user stats including total distance,
+            activity count, and performance metrics.
     """
     athlete_id = client_strava.get_athlete().id  # APi call
     ahtlete_stats = client_strava.get_athlete_stats(athlete_id)
@@ -59,14 +69,12 @@ def get_user_stats() -> str:
     description="Get the last runs from the user's Strava account and return them in a list for activity analysis",
 )
 def get_last_runs() -> str:
-    """
-    Get the last runs from the user's Strava account and return them in a list for activity analysis
+    """Get the last runs from the user's Strava account and return them in a list for activity analysis
     This function will use the Strava API to get the last runs from the user's Strava account and return them in a list for activity analysis
     The function will return a list of runs with the following information:
     name, distance, type, start_date_local, moving_time, average_speed, max_speed, max_heartrate, average_heartrate, total_elevation_gain, average_speed
 
     """
-
     text_result: str = ""
 
     # Get the last 10 runs
@@ -108,8 +116,7 @@ def create_itinerary(
         description="The distance of the itinerary in km", default=10
     ),
 ) -> str:
-    """
-    Produces an itinerary for the user
+    """Produces an itinerary for the user
 
     Args :
     - start : tuple[float, float]
@@ -141,8 +148,7 @@ def create_itinerary(
     def _get_mapping_coords(
         route: dict, distance_km: float
     ) -> list[tuple[float, float]]:
-        """
-        ~2 points per km by evenly sampling indices (not true metric spacing).
+        """~2 points per km by evenly sampling indices (not true metric spacing).
         Includes start and end when possible.
         """
         coordinates = route["features"][0]["geometry"]["coordinates"]
@@ -165,8 +171,7 @@ def create_itinerary(
         origin_coords: tuple[float, float],
         waypoints_coords_list: list[tuple[float, float]] | None = None,
     ) -> str:
-        """
-        Build a Google Maps directions URL.
+        """Build a Google Maps directions URL.
 
         Inputs are (lon, lat) tuples (GeoJSON-style). Output uses "lat,lon" order.
         If waypoints are provided, creates a loop: origin -> waypoints... -> origin.
@@ -199,9 +204,7 @@ def create_itinerary(
         )
 
     def _get_coordinates(place_name: str) -> Coordinates:
-        """
-        Get the coordinates of a place name
-        """
+        """Get the coordinates of a place name"""
         geolocator = Nominatim(user_agent="my_geocoder_app")
         try:
             location = geolocator.geocode(place_name)
@@ -252,8 +255,7 @@ def figures_speed_hr_by_activity(
     series_type: str = "time",
     slice_step: int = 10,
 ):
-    """
-    Returns a list of tuples: [(activity_name, fig_hr, fig_speed), ...]
+    """Returns a list of tuples: [(activity_name, fig_hr, fig_speed), ...]
     - fig_hr : HR curve (red) as a function of time (s)
     - fig_speed : speed curve (blue) as a function of time (s)
     Create a separate figure for each metric (no subplots).
@@ -268,7 +270,8 @@ def figures_speed_hr_by_activity(
                 resolution=resolution,
                 series_type=series_type,
             )
-        except Exception:
+        except Exception as e:
+            print(f"Error processing activity {act.name}: {e}")
             continue
 
         t = np.array(streams["time"].data) if streams and "time" in streams else None

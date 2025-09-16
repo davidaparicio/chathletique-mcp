@@ -1,5 +1,4 @@
-"""
-Strava Coach MCP Server
+"""Strava Coach MCP Server
 
 A Model Context Protocol server for Strava coaching with route planning and weather integration.
 """

@@ -1,10 +1,13 @@
-import requests
-import os
-from .mcp_utils import mcp
-from dotenv import load_dotenv
-from geopy.geocoders import Nominatim
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+"""Weather API integration tools for running conditions forecast."""
 
+import os
+
+import requests
+from dotenv import load_dotenv
+from geopy.exc import GeocoderServiceError, GeocoderTimedOut
+from geopy.geocoders import Nominatim
+
+from .mcp_utils import mcp
 
 # -------------------------------- Globals --------------------------------
 load_dotenv()
@@ -20,10 +23,7 @@ if not token:
     description="Return some future weather information for where the user lives. the place where the user lives is found by looking at where previous runs is located ",
 )
 def get_weather_prediction(place_name: str) -> str:
-    """
-    Loads positions from run_positions.txt and returns weather forecast as a dict.
-    """
-
+    """Loads positions from run_positions.txt and returns weather forecast as a dict."""
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
 
     longitude, latitude = _get_coordinates(place_name)
@@ -34,7 +34,7 @@ def get_weather_prediction(place_name: str) -> str:
         "exclude": "current,minutely,alerts",
     }
 
-    response = requests.get(base_url, params=params)
+    response = requests.get(base_url, params=params, timeout=10)
     response = filter_weather_data(response.json())  # filter out to keep relevant data
     return str(response)
 
@@ -42,9 +42,7 @@ def get_weather_prediction(place_name: str) -> str:
 # -------------------------------- Useful functions --------------------------------
 # get the coordinates of a place name
 def _get_coordinates(place_name: str) -> tuple:
-    """
-    Get the coordinates of a place name
-    """
+    """Get the coordinates of a place name"""
     geolocator = Nominatim(user_agent="my_geocoder_app")
     try:
         location = geolocator.geocode(place_name)
@@ -59,8 +57,7 @@ def _get_coordinates(place_name: str) -> tuple:
 
 # Keep only the relevant fields from the weather data
 def filter_weather_data(data):
-    """
-    Simplify OpenWeatherMap 5-day/3-hour forecast data, keeping:
+    """Simplify OpenWeatherMap 5-day/3-hour forecast data, keeping:
     - temp
     - feels_like
     - humidity

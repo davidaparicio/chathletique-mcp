@@ -2,8 +2,8 @@
 Simple tests for strava tools functionality
 """
 
-import sys
 import os
+import sys
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -99,7 +99,7 @@ class TestGoogleMapsLink:
 
     def test_gmaps_link_with_waypoints(self):
         """Test Google Maps link generation with waypoints"""
-        from urllib.parse import urlencode, quote_plus
+        from urllib.parse import quote_plus, urlencode
 
         def test_get_gmaps_directions_link(origin_coords, waypoints_coords_list=None):
             lon0, lat0 = origin_coords
@@ -139,7 +139,7 @@ class TestGoogleMapsLink:
 
     def test_gmaps_link_no_waypoints(self):
         """Test Google Maps link generation without waypoints"""
-        from urllib.parse import urlencode, quote_plus
+        from urllib.parse import quote_plus, urlencode
 
         def test_get_gmaps_directions_link(origin_coords, waypoints_coords_list=None):
             lon0, lat0 = origin_coords
@@ -182,6 +182,6 @@ class TestDistanceValidation:
         """Test the distance conversion logic"""
         # Tests: distance_m = int(distance_km * 1100)
 
-        assert int(5 * 1100) == 5500
-        assert int(10 * 1100) == 11000
+        assert (5 * 1100) == 5500
+        assert (10 * 1100) == 11000
         assert int(3.5 * 1100) == 3850
