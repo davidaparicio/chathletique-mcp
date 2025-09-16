@@ -23,19 +23,15 @@ dependencies = [
     # Core MCP framework
     "fastmcp>=2.12.3",
     "pydantic>=2.11.9",
-
     # API clients
     "stravalib>=2.4",
     "openrouteservice>=2.3.3",
     "requests>=2.32.5",
-
     # Data processing
     "numpy>=2.3.3",
     "matplotlib>=3.0.0",
-
     # Geocoding
     "geopy>=2.4.1",
-
     # Environment variables
     "python-dotenv>=1.1.1",
 ]
