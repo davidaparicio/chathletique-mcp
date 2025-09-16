@@ -1,14 +1,14 @@
 [project]
-name = "strava-coach-mcp"
+name = "chathletique-mcp"
 version = "0.1.0"
 description = "A Model Context Protocol server providing AI assistants with Strava running data, route planning, and weather information for intelligent running coaching"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.13"
 authors = [
-    { name = "Colin Frisch", email = "your.email@example.com" }
+    { name = "Colin Frisch", email = "colin.frisch@student-cs.fr" },
 ]
-keywords = ["strava", "mcp", "running", "ai", "coaching", "weather", "route-planning"]
+keywords = ["strava", "mcp", "mistral", "ai", "coaching", "chathletique", "running"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -23,34 +23,39 @@ dependencies = [
     # Core MCP framework
     "fastmcp>=2.12.3",
     "pydantic>=2.11.9",
-    
+
     # API clients
     "stravalib>=2.4",
     "openrouteservice>=2.3.3",
     "requests>=2.32.5",
-    
+
     # Data processing
     "numpy>=2.3.3",
     "matplotlib>=3.0.0",
-    
+
     # Geocoding
     "geopy>=2.4.1",
-    
+
     # Environment variables
     "python-dotenv>=1.1.1",
 ]
 
 [project.urls]
-Homepage = "https://github.com/colinfrisch/Chathletique-MCP"
-Repository = "https://github.com/colinfrisch/Chathletique-MCP"
-Issues = "https://github.com/colinfrisch/Chathletique-MCP/issues"
+Homepage = "https://github.com/colinfrisch/chathletique-mcp"
+Repository = "https://github.com/colinfrisch/chathletique-mcp"
+Issues = "https://github.com/colinfrisch/chathletique-mcp/issues"
 
 [project.scripts]
-strava-coach-mcp = "main:main"
+chathletique-mcp = "main:main"
 
 [project.optional-dependencies]
 dev = [
-    "black>=25.1.0",
+    "pre-commit",
+    "ruff",
+    "coverage",
+    "sphinx",
+    "pytest-cov",
+    "black[jupyter]>=25.1.0",
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "mypy>=1.8.0",
@@ -61,7 +66,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/strava_mcp"]
+packages = ["src/chathletique_mcp"]
 
 [tool.black]
 line-length = 88
@@ -102,8 +107,3 @@ markers = [
     "integration: marks tests as integration tests",
 ]
 
-[dependency-groups]
-dev = [
-    "pytest>=8.4.2",
-    "pytest-mock>=3.15.0",
-]

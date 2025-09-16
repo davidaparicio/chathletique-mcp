@@ -25,7 +25,7 @@ uv run pytest tests/test_weather_tools.py -v
 - Validates weather API response processing
 - Tests edge cases (missing data, empty responses)
 
-### `test_strava_tools.py` 
+### `test_strava_tools.py`
 - Tests route planning utility functions
 - Validates Google Maps link generation
 - Tests distance validation and conversion logic

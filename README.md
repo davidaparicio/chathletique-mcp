@@ -3,9 +3,9 @@
 ### 🏆 MISTRAL MCP HACKATHON WINNER 🏆
 
 @Loucienne
-@leotrois	
+@leotrois
 @frogens
-@Ulysse6307	
+@Ulysse6307
 @colinfrisch
 
 A Model Context Protocol (MCP) server that provides AI assistants with access to Strava running data, route planning, and weather information. This server enables intelligent running coaching by combining Strava activity analysis with real-time weather data and route generation capabilities.

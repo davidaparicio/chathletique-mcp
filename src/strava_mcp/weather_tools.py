@@ -8,21 +8,18 @@ from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 # -------------------------------- Globals --------------------------------
 load_dotenv()
-token = os.getenv('WEATHER_API_KEY')
+token = os.getenv("WEATHER_API_KEY")
 if not token:
     print("Error: WEATHER_API_KEY not found in .env file")
     exit(1)
 
 
-
-
 # -------------------------------- Tools --------------------------------
 @mcp.tool(
     title="Get Weather Predictions",
-    description="Return some future weather informations for where the user lives. the place where the user lives is found by looking at where previous runs is located ",
+    description="Return some future weather information for where the user lives. the place where the user lives is found by looking at where previous runs is located ",
 )
-def get_weather_prediction(place_name : str)-> str:
-
+def get_weather_prediction(place_name: str) -> str:
     """
     Loads positions from run_positions.txt and returns weather forecast as a dict.
     """
@@ -31,22 +28,20 @@ def get_weather_prediction(place_name : str)-> str:
 
     longitude, latitude = _get_coordinates(place_name)
     params = {
-    "lat": longitude,
-    "lon": latitude,
-    "appid" : token,
-    "exclude" : "current,minutely,alerts",
-
+        "lat": longitude,
+        "lon": latitude,
+        "appid": token,
+        "exclude": "current,minutely,alerts",
     }
 
     response = requests.get(base_url, params=params)
-    response = filter_weather_data(response.json()) # filter out to keep relevant data
+    response = filter_weather_data(response.json())  # filter out to keep relevant data
     return str(response)
-
 
 
 # -------------------------------- Useful functions --------------------------------
 # get the coordinates of a place name
-def _get_coordinates(place_name : str) -> tuple:
+def _get_coordinates(place_name: str) -> tuple:
     """
     Get the coordinates of a place name
     """
@@ -55,12 +50,11 @@ def _get_coordinates(place_name : str) -> tuple:
         location = geolocator.geocode(place_name)
     except (GeocoderTimedOut, GeocoderServiceError) as e:
         print("Error:", e)
-        return 'Failed to get coordinates'
+        return "Failed to get coordinates"
     if location:
         return (location.longitude, location.latitude)
     else:
-        return 'Failed to get coordinates'
-
+        return "Failed to get coordinates"
 
 
 # Keep only the relevant fields from the weather data
@@ -83,8 +77,14 @@ def filter_weather_data(data):
     sunset_utc = city_info.get("sunset")
     name = city_info.get("name")
 
-
-    simplified = [{"sunrise": sunrise_utc, "sunset": sunset_utc, "timezone": timezone_offset, "name": name}]
+    simplified = [
+        {
+            "sunrise": sunrise_utc,
+            "sunset": sunset_utc,
+            "timezone": timezone_offset,
+            "name": name,
+        }
+    ]
 
     for entry in data.get("list", []):
         main = entry.get("main", {})
@@ -92,23 +92,24 @@ def filter_weather_data(data):
         wind = entry.get("wind", {})
         rain = entry.get("rain", {}).get("3h", 0)  # default to 0 if missing
 
-        simplified.append({
-            "temp": main.get("temp"),
-            "feels_like": main.get("feels_like"),
-            "humidity": main.get("humidity"),
-            "weather": {
-                "main": weather.get("main"),
-                "description": weather.get("description")
-            },
-            "wind": {
-                "speed": wind.get("speed"),
-                "deg": wind.get("deg"),
-                "gust": wind.get("gust")
-            },
-            "pop": entry.get("pop"),
-            "rain": rain,
-            "dt": entry.get("dt")
-        })
+        simplified.append(
+            {
+                "temp": main.get("temp"),
+                "feels_like": main.get("feels_like"),
+                "humidity": main.get("humidity"),
+                "weather": {
+                    "main": weather.get("main"),
+                    "description": weather.get("description"),
+                },
+                "wind": {
+                    "speed": wind.get("speed"),
+                    "deg": wind.get("deg"),
+                    "gust": wind.get("gust"),
+                },
+                "pop": entry.get("pop"),
+                "rain": rain,
+                "dt": entry.get("dt"),
+            }
+        )
 
     return simplified
-
