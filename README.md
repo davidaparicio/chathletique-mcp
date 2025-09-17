@@ -59,7 +59,7 @@ cd chathletique-mcp
 pip install -e .
 
 # Install development dependencies (for contributing)
-pip install -e .[dev]
+pip install -e ".[dev]"
 ```
 
 3. **Configure environment:**
