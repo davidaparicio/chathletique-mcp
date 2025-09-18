@@ -21,8 +21,24 @@ REDIRECT_URI = os.getenv(
 
 # Store user tokens in memory (for demo; use a DB in production)
 user_tokens = {}
+current_user_token = None  # Simple single-user token storage
 
 auth = FastAPI()
+
+
+def get_current_token():
+    """Get the current user's Strava access token."""
+    global current_user_token  # noqa
+    if current_user_token:
+        return current_user_token
+
+    # Fallback: try to get from environment (for dev)
+    token = os.getenv("STRAVA_ACCESS_TOKEN")
+    if token:
+        current_user_token = token
+        return token
+
+    return None
 
 
 @auth.get("/auth/strava")
@@ -41,6 +57,8 @@ async def auth_strava():
 @auth.get("/auth/callback")
 async def callback(request: Request):
     """Handle Strava OAuth callback and store user token."""
+    global current_user_token  # noqa
+
     code = request.query_params.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="Missing authorization code")
@@ -58,8 +76,11 @@ async def callback(request: Request):
         if response.status_code != 200:
             raise HTTPException(status_code=400, detail="Failed to fetch access token")
 
-        access_token = response.json()["access_token"]
+        token_data = response.json()
+        access_token = token_data["access_token"]
 
-        # TO MODIFY WITH ACTUAL USER DB IN PROD
-        user_tokens[access_token] = True
+        # Store token globally for MCP tools to use
+        current_user_token = access_token
+        user_tokens[access_token] = token_data
+
         return {"status": "success", "access_token": access_token}

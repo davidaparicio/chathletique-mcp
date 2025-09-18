@@ -1,8 +1,7 @@
 """MCP Server Template"""
 
-from .mcp_utils import auth, mcp
-
 # Import modules containing MCP tools to register them
+from .mcp_utils import auth, mcp
 
 
 def main():
