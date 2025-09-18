@@ -4,7 +4,7 @@ import os
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastmcp import FastMCP
 
 mcp = FastMCP("Chathletique MCP Server", port=3000, stateless_http=True, debug=True)
@@ -22,8 +22,10 @@ REDIRECT_URI = os.getenv(
 # Store user tokens in memory (for demo; use a DB in production)
 user_tokens = {}
 
+auth = FastAPI()
 
-@mcp.route("/auth/strava")
+
+@auth.get("/auth/strava")
 async def auth_strava():
     """Redirect user to Strava for OAuth authorization."""
     auth_url = (
@@ -36,7 +38,7 @@ async def auth_strava():
     return {"url": auth_url}
 
 
-@mcp.route("/auth/callback")
+@auth.get("/auth/callback")
 async def callback(request: Request):
     """Handle Strava OAuth callback and store user token."""
     code = request.query_params.get("code")
