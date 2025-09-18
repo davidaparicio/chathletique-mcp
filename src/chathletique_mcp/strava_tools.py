@@ -13,17 +13,21 @@ from geopy.exc import GeocoderServiceError, GeocoderTimedOut
 from geopy.geocoders import Nominatim
 from pydantic import BaseModel, Field
 
-from .mcp_utils import mcp
+from .mcp_utils import mcp, user_tokens
 
 # -------------------------------- Globals --------------------------------
 load_dotenv()
-strava_api_key = os.getenv("STRAVA_ACCESS_TOKEN")
-ors_api_key = os.getenv("ORS_KEY")
-if not strava_api_key:
+
+if not user_tokens.get(user_tokens.keys()[0]):
     print("Error: STRAVA_ACCESS_TOKEN not found in .env file")
     exit(1)
 
-client_strava = stravalib.Client(access_token=strava_api_key)
+strava_user_api_key = user_tokens.keys()[0]
+
+ors_api_key = os.getenv("ORS_KEY")
+
+
+client_strava = stravalib.Client(access_token=strava_user_api_key)
 client_ors = openrouteservice.Client(key=ors_api_key)
 
 
