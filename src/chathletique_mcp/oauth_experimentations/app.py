@@ -5,12 +5,12 @@ import requests
 import stravalib
 from dotenv import load_dotenv
 from fastmcp import FastMCP
-from fastmcp.server.auth import OAuthProxy  # OAuth Proxy provider
-from fastmcp.server.auth.auth import (  # SDK ref shows these types
+from fastmcp.server.auth import OAuthProxy
+from fastmcp.server.auth.auth import (
     AccessToken,
     TokenVerifier,
 )
-from fastmcp.server.dependencies import get_access_token  # obtain token in tools
+from fastmcp.server.dependencies import get_access_token
 
 load_dotenv()
 
@@ -75,7 +75,8 @@ auth = OAuthProxy(
     redirect_path="/auth/callback",
 )
 
-mcp = FastMCP(name="Strava MCP", auth=auth)
+
+mcp = FastMCP(name="MCP", auth=auth)
 
 
 @mcp.tool
@@ -86,6 +87,7 @@ def get_last_run_statistics() -> str:
     text_result: str = ""
 
     token = get_access_token()
+    print("token ", token)
     if token is None or not getattr(token, "token", ""):
         raise RuntimeError("Not authenticated. Complete OAuth first.")
 
