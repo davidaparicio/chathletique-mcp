@@ -22,7 +22,7 @@ classifiers = [
 dependencies = [
     # Core MCP framework
     "fastmcp>=2.12.3",
-    "pydantic>=2.11.9",
+    "pydantic>=2",
     # API clients
     "stravalib>=2.4",
     "openrouteservice>=2.3.3",
@@ -34,6 +34,7 @@ dependencies = [
     "geopy>=2.4.1",
     # Environment variables
     "python-dotenv>=1.1.1",
+    "polyline>=2.0.3",
 ]
 
 [project.urls]
