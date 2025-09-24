@@ -134,5 +134,4 @@ auth = OAuthProxy(
     base_url=BASE_URL,
 )
 
-mcp = FastMCP("Chatletique MCP Server", port=3000, stateless_http=True, debug=True)
-mcp = FastMCP(name="strava-mcp", auth=auth)
+mcp = FastMCP("Chatletique MCP Server", port=3000, debug=True)
