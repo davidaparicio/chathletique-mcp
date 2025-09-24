@@ -224,6 +224,8 @@ def create_itinerary(
         }
 
     def get_segments(bounds):
+        
+        client_strava=get_strava_client()
 
         segments=client_strava.explore_segments(bounds=bounds, activity_type='running') # Return all the segment disponible in this bound
 
@@ -243,15 +245,15 @@ def create_itinerary(
         return list_segment
 
     def get_path_segment(Segment : dict) -> list[tuple[float, float]]:
-        """Get a running path from start to end, passing through Segment_path."""
+        """Get a running path from start to end, passing through segment_path."""
 
-        length_Segment=len(Segment["points"])
-        middle_coord_index1=length_Segment//4
-        middle_coord_index2=3*length_Segment//4
-        quarter_coord=Segment["points"][middle_coord_index1]  
-        three_quarter_coord=Segment["points"][middle_coord_index2]
-        start_coord=(Segment["start_latlng"].root[0], Segment["start_latlng"].root[1])
-        end_coord=(Segment["end_latlng"].root[0], Segment["end_latlng"].root[1])
+        length_segment=len(segment["points"])
+        middle_coord_index1=length_segment//4
+        middle_coord_index2=3*length_segment//4
+        quarter_coord=segment["points"][middle_coord_index1]  
+        three_quarter_coord=segment["points"][middle_coord_index2]
+        start_coord=(segment["start_latlng"].root[0], segment["start_latlng"].root[1])
+        end_coord=(segment["end_latlng"].root[0], segment["end_latlng"].root[1])
 
         return [start_coord, quarter_coord, three_quarter_coord, end_coord]
 
