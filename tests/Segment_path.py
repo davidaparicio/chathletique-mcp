@@ -6,13 +6,10 @@ import openrouteservice
 import polyline
 import openrouteservice
 from urllib.parse import quote_plus, urlencode
-from geopy.distance import geodesic
 import requests
 import math
 import random
 
-
-geod = Geod(ellps="WGS84")
 
 load_dotenv()
 
@@ -67,13 +64,13 @@ def compute_route(origin, destination, waypoints=None, mode="WALK", api_key=goog
 
 
 
-def Get_segments(bounds):
+def get_segments(bounds):
 
-    Segments=client_strava.explore_segments(bounds=bounds, activity_type='running')
+    segments=client_strava.explore_segments(bounds=bounds, activity_type='running')
 
     list_segment=[]
 
-    for seg in Segments:
+    for seg in segments:
         desc = {
             "id": int(seg.id),
             "name": seg.name,
@@ -86,16 +83,16 @@ def Get_segments(bounds):
 
     return list_segment
 
-def get_path_segment(Segment : dict) -> list[tuple[float, float]]:
-    """Get a running path from start to end, passing through Segment_path."""
+def get_path_segment(segment : dict) -> list[tuple[float, float]]:
+    """Get a running path from start to end, passing through segment_path."""
 
-    length_Segment=len(Segment["points"])
-    middle_coord_index1=length_Segment//4
-    middle_coord_index2=3*length_Segment//4
-    quarter_coord=Segment["points"][middle_coord_index1]  
-    three_quarter_coord=Segment["points"][middle_coord_index2]
-    start_coord=(Segment["start_latlng"].root[0], Segment["start_latlng"].root[1])
-    end_coord=(Segment["end_latlng"].root[0], Segment["end_latlng"].root[1])
+    length_segment=len(segment["points"])
+    middle_coord_index1=length_segment//4
+    middle_coord_index2=3*length_segment//4
+    quarter_coord=segment["points"][middle_coord_index1]  
+    three_quarter_coord=segment["points"][middle_coord_index2]
+    start_coord=(segment["start_latlng"].root[0], segment["start_latlng"].root[1])
+    end_coord=(segment["end_latlng"].root[0], segment["end_latlng"].root[1])
 
     return [start_coord, quarter_coord, three_quarter_coord, end_coord]
 
@@ -137,20 +134,20 @@ def _get_gmaps_directions_link(
 
 
 
-def create_path(ListSegment, distance, Start_coords):
-    New_list_segment=[]
+def create_path(listsegment, distance, start_coords):
+    new_list_segment=[]
 
-    for List_seg in ListSegment:
-        for seg in List_seg:
+    for list_seg in listsegment:
+        for seg in list_seg:
             coord_seg=get_path_segment(seg)
-            print("longueur segment depuis le depart: ",compute_route(Start_coords,coord_seg[0],coord_seg[1:-1], mode="WALK", api_key=google_api_key)["distance_m"],"Distance Segment + nom",seg["distance_m"],seg["name"])
-            if distance/3<compute_route(Start_coords,coord_seg[0],coord_seg[1:-1], mode="WALK", api_key=google_api_key)["distance_m"]<(distance)/2:
+            print("longueur segment depuis le depart: ",compute_route(start_coords,coord_seg[0],coord_seg[1:-1], mode="WALK", api_key=google_api_key)["distance_m"],"Distance segment + nom",seg["distance_m"],seg["name"])
+            if distance/3<compute_route(start_coords,coord_seg[0],coord_seg[1:-1], mode="WALK", api_key=google_api_key)["distance_m"]<(distance)/2:
                     print("OK")
-                    New_list_segment.append(seg)
+                    new_list_segment.append(seg)
         
-    print("Nb segments retenus :", len(New_list_segment))
+    print("Nb segments retenus :", len(new_list_segment))
 
-    segs = New_list_segment[:]        
+    segs = new_list_segment[:]        
     random.shuffle(segs) # on choisit un ordre aléatoire pour eviter de donner le meme segment au client à chaque fois
             
     for seg in segs:
@@ -163,23 +160,23 @@ def create_path(ListSegment, distance, Start_coords):
 
         for _ in range(10):
 
-            Actual_distance=compute_route(Start_coords, Start_coords, path_segment, mode="WALK",api_key=google_api_key)["distance_m"]
+            actual_distance=compute_route(start_coords, start_coords, path_segment, mode="WALK",api_key=google_api_key)["distance_m"]
 
-            if distance-100<Actual_distance<distance+100:
+            if distance-100<actual_distance<distance+100:
                 print("Nom du segment:",seg["name"], "Distance segment :",seg["distance_m"])
-                return Start_coords, path_segment
+                return start_coords, path_segment
 
-            if Actual_distance>distance:
+            if actual_distance>distance:
                 new_waypoint=(new_waypoint[0]- pas, new_waypoint[1]-pas)
                 
                 
-            elif Actual_distance<distance:
+            elif actual_distance<distance:
                 new_waypoint=(new_waypoint[0]+pas, new_waypoint[1]+pas)
 
             path_segment[-1]=new_waypoint
             pas=pas/2
 
-            print("Distance Actuel, point et pas !", Actual_distance, new_waypoint, pas)
+            print("Distance Actuel, point et pas !", actual_distance, new_waypoint, pas)
 
     return "No segment found"
 
@@ -202,22 +199,22 @@ def bounds_for_run(center_lat, center_lon, distance_m):
     mid_lon = (min_lon + max_lon) / 2.0
 
     # Quadrillage en 4 tuiles : SW, SE, NW, NE
-    Bounds = [
+    bounds = [
         [min_lat, min_lon, mid_lat, mid_lon],  # SW
         [min_lat, mid_lon, mid_lat, max_lon],  # SE
         [mid_lat,  min_lon, max_lat, mid_lon], # NW
         [mid_lat,  mid_lon, max_lat, max_lon], # NE
     ]
-    return Bounds
+    return bounds
 
 DOBROPOL_16 = (48.8833, 2.2857)  # approx lat, lon
 
 
 bounds = bounds_for_run(48.8833, 2.285, 10_000)
-List_Segment=[]
+list_segment=[]
 for bound in bounds:
-    List_Segment.append(Get_segments(bound))
-Path=create_path(List_Segment, 10000, DOBROPOL_16)
+    list_segment.append(get_segments(bound))
+Path=create_path(list_segment, 10000, DOBROPOL_16)
 print(Path)
 maps=_get_gmaps_directions_link(Path[0], Path[1])
 print(maps)

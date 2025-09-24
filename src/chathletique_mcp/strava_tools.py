@@ -244,7 +244,7 @@ def create_itinerary(
 
         return list_segment
 
-    def get_path_segment(Segment : dict) -> list[tuple[float, float]]:
+    def get_path_segment(segment : dict) -> list[tuple[float, float]]:
         """Get a running path from start to end, passing through segment_path."""
 
         length_segment=len(segment["points"])
@@ -335,8 +335,8 @@ def create_itinerary(
     list_segment=[]
     for bound in bounds:
         list_segment.append(get_segments(bound))
-    Path=create_path(list_segment, 10000, start_coords)
-    maps=_get_gmaps_directions_link(Path[0], Path[1])
+    path=create_path(list_segment, 10000, start_coords)
+    maps=_get_gmaps_directions_link(path[0], path[1])
 
     return maps
 
