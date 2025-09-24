@@ -3,16 +3,15 @@
 import json
 import math
 import os
-from urllib.parse import quote_plus, urlencode
 import random
-import requests
-import polyline
-import ssl, certifi
+import ssl
+from urllib.parse import quote_plus, urlencode
 
-
-
+import certifi
 import numpy as np
 import openrouteservice
+import polyline
+import requests
 import stravalib
 from dotenv import load_dotenv
 from geopy.exc import GeocoderServiceError, GeocoderTimedOut
@@ -27,8 +26,9 @@ load_dotenv()
 ors_api_key = os.getenv("ORS_KEY")
 client_ors = openrouteservice.Client(key=ors_api_key)
 google_api_key = os.getenv("GOOGLE_MAPS_API_KEY")
-ROUTES_URL = "https://routes.googleapis.com/directions/v2:computeRoutes" #Google Map URL
-
+ROUTES_URL = (
+    "https://routes.googleapis.com/directions/v2:computeRoutes"  # Google Map URL
+)
 
 
 def get_strava_client():
@@ -156,15 +156,16 @@ def create_itinerary(
         url = "https://nominatim.openstreetmap.org/search"
         headers = {"User-Agent": "chathletique-mcp/0.1 (contact: you@example.com)"}
         params = {"q": place_name, "format": "json", "limit": 1}
-        r = requests.get(url, headers=headers, params=params, timeout=10, verify=certifi.where())
+        r = requests.get(
+            url, headers=headers, params=params, timeout=10, verify=certifi.where()
+        )
         r.raise_for_status()
         data = r.json()
         if not data:
             raise ValueError(f"Lieu introuvable: {place_name}")
         return float(data[0]["lat"]), float(data[0]["lon"])
-    
 
-    def bounds_for_run(center_lat, center_lon, distance_m : int):
+    def bounds_for_run(center_lat, center_lon, distance_m: int):
         """
         Return 4 bounds (SW, SE, NW, NE) :
         [min_lat, min_lon, max_lat, max_lon].
@@ -183,12 +184,14 @@ def create_itinerary(
         bounds = [
             [min_lat, min_lon, mid_lat, mid_lon],  # SW
             [min_lat, mid_lon, mid_lat, max_lon],  # SE
-            [mid_lat,  min_lon, max_lat, mid_lon], # NW
-            [mid_lat,  mid_lon, max_lat, max_lon], # NE
+            [mid_lat, min_lon, max_lat, mid_lon],  # NW
+            [mid_lat, mid_lon, max_lat, max_lon],  # NE
         ]
         return bounds
-    
-    def compute_route(origin, destination, waypoints=None, mode="WALK", api_key=google_api_key) -> dict:
+
+    def compute_route(
+        origin, destination, waypoints=None, mode="WALK", api_key=google_api_key
+    ) -> dict:
         """
         origin, destination, waypoints: (lat, lon)
         mode: "WALK" | "DRIVE" | "BICYCLE" | "TWO_WHEELER"
@@ -199,8 +202,13 @@ def create_itinerary(
             "X-Goog-Api-Key": api_key,
             "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline",
         }
+
         def ll(pt):  # (lat, lon) -> payload Routes API
-            return {"location": {"latLng": {"latitude": float(pt[0]), "longitude": float(pt[1])}}}
+            return {
+                "location": {
+                    "latLng": {"latitude": float(pt[0]), "longitude": float(pt[1])}
+                }
+            }
 
         body = {
             "origin": ll(origin),
@@ -212,7 +220,6 @@ def create_itinerary(
 
         r = requests.post(ROUTES_URL, headers=headers, json=body, timeout=20)
         if r.status_code != 200:
-   
             raise RuntimeError(f"Routes API {r.status_code}: {r.text}")
 
         route = r.json()["routes"][0]
@@ -224,12 +231,13 @@ def create_itinerary(
         }
 
     def get_segments(bounds):
-        
-        client_strava=get_strava_client()
+        client_strava = get_strava_client()
 
-        segments=client_strava.explore_segments(bounds=bounds, activity_type='running') # Return all the segment disponible in this bound
+        segments = client_strava.explore_segments(
+            bounds=bounds, activity_type="running"
+        )  # Return all the segment disponible in this bound
 
-        list_segment=[]
+        list_segment = []
 
         for seg in segments:
             desc = {
@@ -244,99 +252,116 @@ def create_itinerary(
 
         return list_segment
 
-    def get_path_segment(segment : dict) -> list[tuple[float, float]]:
+    def get_path_segment(segment: dict) -> list[tuple[float, float]]:
         """Get a running path from start to end, passing through segment_path."""
 
-        length_segment=len(segment["points"])
-        middle_coord_index1=length_segment//4
-        middle_coord_index2=3*length_segment//4
-        quarter_coord=segment["points"][middle_coord_index1]  
-        three_quarter_coord=segment["points"][middle_coord_index2]
-        start_coord=(segment["start_latlng"].root[0], segment["start_latlng"].root[1])
-        end_coord=(segment["end_latlng"].root[0], segment["end_latlng"].root[1])
+        length_segment = len(segment["points"])
+        middle_coord_index1 = length_segment // 4
+        middle_coord_index2 = 3 * length_segment // 4
+        quarter_coord = segment["points"][middle_coord_index1]
+        three_quarter_coord = segment["points"][middle_coord_index2]
+        start_coord = (segment["start_latlng"].root[0], segment["start_latlng"].root[1])
+        end_coord = (segment["end_latlng"].root[0], segment["end_latlng"].root[1])
 
         return [start_coord, quarter_coord, three_quarter_coord, end_coord]
 
-
     def _get_gmaps_directions_link(
-            origin_coords: tuple[float, float],
-            waypoints_coords_list: list[tuple[float, float]] | None = None,
-        ) -> str:
-            """Build a Google Maps directions URL.
-            """
-            lat0, lon0 = origin_coords
-            origin = f"{lat0},{lon0}"
+        origin_coords: tuple[float, float],
+        waypoints_coords_list: list[tuple[float, float]] | None = None,
+    ) -> str:
+        """Build a Google Maps directions URL."""
+        lat0, lon0 = origin_coords
+        origin = f"{lat0},{lon0}"
 
-            if waypoints_coords_list:
-                wps = [
-                    f"{lat},{lon}"
-                    for lat, lon in waypoints_coords_list
-                    if f"{lat},{lon}" != origin
-                ]
-                params = {
-                    "api": 1,
-                    "origin": origin,
-                    "destination": origin,
-                    "waypoints": "|".join(wps),
-                }
-                return "https://www.google.com/maps/dir/?" + urlencode(
-                    params, quote_via=quote_plus
-                )
-
-            # No waypoints: just point to the origin as destination
-            params = {"api": 1, "destination": origin}
+        if waypoints_coords_list:
+            wps = [
+                f"{lat},{lon}"
+                for lat, lon in waypoints_coords_list
+                if f"{lat},{lon}" != origin
+            ]
+            params = {
+                "api": 1,
+                "origin": origin,
+                "destination": origin,
+                "waypoints": "|".join(wps),
+            }
             return "https://www.google.com/maps/dir/?" + urlencode(
                 params, quote_via=quote_plus
             )
 
+        # No waypoints: just point to the origin as destination
+        params = {"api": 1, "destination": origin}
+        return "https://www.google.com/maps/dir/?" + urlencode(
+            params, quote_via=quote_plus
+        )
+
     def create_path(list_segment, distance, start_coords):
-        new_list_segment=[]
+        new_list_segment = []
 
         for list_seg in list_segment:
             for seg in list_seg:
-                coord_seg=get_path_segment(seg)
-                if distance/3<compute_route(start_coords,coord_seg[0],coord_seg[1:-1], mode="WALK", api_key=google_api_key)["distance_m"]<(distance)/2:
-                        new_list_segment.append(seg)
-            
-        segs = new_list_segment[:]        
-        random.shuffle(segs) # on choisit un ordre aléatoire pour eviter de donner le meme segment au client à chaque fois
-                
+                coord_seg = get_path_segment(seg)
+                if (
+                    distance / 3
+                    < compute_route(
+                        start_coords,
+                        coord_seg[0],
+                        coord_seg[1:-1],
+                        mode="WALK",
+                        api_key=google_api_key,
+                    )["distance_m"]
+                    < (distance) / 2
+                ):
+                    new_list_segment.append(seg)
+
+        segs = new_list_segment[:]
+        random.shuffle(
+            segs
+        )  # on choisit un ordre aléatoire pour eviter de donner le meme segment au client à chaque fois
+
         for seg in segs:
-
-            pas=0.1
-            path_segment=get_path_segment(seg)
-            new_waypoint=(path_segment[-1][0]+pas, path_segment[-1][1]+pas) # On choisit un point au nord est du segment
+            pas = 0.1
+            path_segment = get_path_segment(seg)
+            new_waypoint = (
+                path_segment[-1][0] + pas,
+                path_segment[-1][1] + pas,
+            )  # On choisit un point au nord est du segment
             path_segment.append(new_waypoint)
-            pas=pas/2
+            pas = pas / 2
 
-            for _ in range(10): #On effectue une dichotomie pour trouver la bonne longueur
+            for _ in range(
+                10
+            ):  # On effectue une dichotomie pour trouver la bonne longueur
+                actual_distance = compute_route(
+                    start_coords,
+                    start_coords,
+                    path_segment,
+                    mode="WALK",
+                    api_key=google_api_key,
+                )["distance_m"]  # Regarde la distance totale
 
-                actual_distance=compute_route(start_coords, start_coords, path_segment, mode="WALK",api_key=google_api_key)["distance_m"] # Regarde la distance totale
+                if distance - 100 < actual_distance < distance + 100:
+                    return start_coords, path_segment
 
-                if distance-100<actual_distance<distance+100:
-                    return start_coords, path_segment 
+                if actual_distance > distance:
+                    new_waypoint = (new_waypoint[0] - pas, new_waypoint[1] - pas)
 
-                if actual_distance>distance:
-                    new_waypoint=(new_waypoint[0]- pas, new_waypoint[1]-pas)
-                    
-                    
-                elif actual_distance<distance:
-                    new_waypoint=(new_waypoint[0]+pas, new_waypoint[1]+pas)
+                elif actual_distance < distance:
+                    new_waypoint = (new_waypoint[0] + pas, new_waypoint[1] + pas)
 
-                path_segment[-1]=new_waypoint
-                pas=pas/2
+                path_segment[-1] = new_waypoint
+                pas = pas / 2
 
         return "No segment found"
 
-        
     start_coords = get_coordinates(starting_place)
-    distance_m=int(distance_km)*10000
-    bounds=bounds_for_run(start_coords[0],start_coords[1],distance_m)
-    list_segment=[]
+    distance_m = int(distance_km) * 10000
+    bounds = bounds_for_run(start_coords[0], start_coords[1], distance_m)
+    list_segment = []
     for bound in bounds:
         list_segment.append(get_segments(bound))
-    path=create_path(list_segment, 10000, start_coords)
-    maps=_get_gmaps_directions_link(path[0], path[1])
+    path = create_path(list_segment, 10000, start_coords)
+    maps = _get_gmaps_directions_link(path[0], path[1])
 
     return maps
 
