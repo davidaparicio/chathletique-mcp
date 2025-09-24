@@ -16,7 +16,7 @@ load_dotenv()
 
 strava_api_key = os.getenv("STRAVA_ACCESS_TOKEN")
 ors_api_key = os.getenv("ORS_KEY")
-google_api_key = os.getenv("GOOGLE_MAP_API_KEY")
+google_api_key = os.getenv("GOOGLE_MAPS_API_KEY")
 
 client_strava = stravalib.Client(access_token=strava_api_key)
 client_ors = openrouteservice.Client(key=ors_api_key)
@@ -51,7 +51,7 @@ def compute_route(origin, destination, waypoints=None, mode="WALK", api_key=goog
 
     r = requests.post(ROUTES_URL, headers=headers, json=body, timeout=20)
     if r.status_code != 200:
-        # Affiche la vraie raison du 400/403/etc.
+   
         raise RuntimeError(f"Routes API {r.status_code}: {r.text}")
 
     route = r.json()["routes"][0]
