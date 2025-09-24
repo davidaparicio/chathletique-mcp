@@ -16,7 +16,7 @@ load_dotenv()
 
 strava_api_key = os.getenv("STRAVA_ACCESS_TOKEN")
 ors_api_key = os.getenv("ORS_KEY")
-google_api_key = os.getenv("GOOGLE_MAPS_API_KEY")
+google_api_key = os.getenv("GOOGLE_MAP_API_KEY")
 
 client_strava = stravalib.Client(access_token=strava_api_key)
 client_ors = openrouteservice.Client(key=ors_api_key)
